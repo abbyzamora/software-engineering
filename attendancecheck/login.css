@@ -1,0 +1,16 @@
+body {
+    margin: 0;
+    background-image: url(dlsubg.jpg);
+    background-size: 2028px 1180px;
+    background-repeat: no-repeat;
+    display: compact;
+}
+
+h4{
+    font-family: galliard;
+
+}
+
+.whitetext {
+    color: white;
+}

@@ -61,21 +61,34 @@
 						throw new Exception();
 					}
 
+					// duplicate check
+					$dQuery = "Select * from Form_attendance fa join MV_ATTENDANCE ma on fa.formID = ma.formID where fa.date = now() and  ma.coursecode = '{$coursecode}' and ma.facultyId = {$facultyId} and 
+					ma.dayID = '{$day}' and ma.schoolYear = {$year} and ma.term = {$term} and ma.section = '{$section}' ";
+					$d = mysqli_query($dbc, $dQuery);
 
-					
-						 
-					$insertQuery = 
-						'Insert into MV_ATTENDANCE VALUES("'.$coursecode.'","'.$facultyId.'","'.$day.'" ,"'.$year.'", "'.$term.'","'.$section.'","'.$formID.'","'.$attendaceCode.'","'.$remarks.'")';
-					 
-					$success =$dbc->query($insertQuery);
-					 
+					if(empty($d)){
 
-					if($success){
+
 						
-					}else{
-						 	$good =0;
-						/*Echo 'Shift:'.$key.' Line '.$er.' Failed!';*/
+						
 					}
+					else{
+						 
+					}
+					$insertQuery = 
+							'Insert into MV_ATTENDANCE VALUES("'.$coursecode.'","'.$facultyId.'","'.$day.'" ,"'.$year.'", "'.$term.'","'.$section.'","'.$formID.'","'.$attendaceCode.'","'.$remarks.'")';
+						 
+						$success =$dbc->query($insertQuery);
+						 
+
+						if($success){
+							
+						}else{
+							 	$good =0;
+							/*Echo 'Shift:'.$key.' Line '.$er.' Failed!';*/
+						} 
+					
+					
 
 
 

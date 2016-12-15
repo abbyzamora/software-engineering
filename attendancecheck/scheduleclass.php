@@ -2285,7 +2285,7 @@
             if(output){
                 $.post({
             
-                  url: '/swengg/attendancecheck/insert.php',
+                  url: 'insert.php',
                   data:output,
                   success:function(data){
                     alert(data);
@@ -2307,7 +2307,7 @@
             if(output){
                 $.post({
             
-                  url: '/swengg/attendancecheck/insertCheckedRooms.php',
+                  url: 'insertCheckedRooms.php',
                   data:{'data':output},
                   success:function(data){
                     alert(data);

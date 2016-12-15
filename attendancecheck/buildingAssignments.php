@@ -119,7 +119,7 @@ if(isset($_SESSION['adminemail'])){
 					<div class="panel-body">
 						<?php
 							//retrieve assigned rooms
-							$query = "SELECT B.buildingName, P.roomCode,  P.courseCode, P.section, S.shiftCode as shift,CONCAT(DATE_FORMAT(startTime, '%H:%i'), ' - ', DATE_FORMAT(endTime, '%H:%i')) AS time, startTime, endTime, P.dayID, CONCAT(F.lastname, ', ', F.firstName) as faculty
+							$query = "SELECT B.buildingName, P.roomCode,  P.courseCode, P.section, S.shiftCode as shift ,CONCAT(DATE_FORMAT(startTime, '%H:%i'), ' - ', DATE_FORMAT(endTime, '%H:%i')) AS time, startTime, endTime, P.dayID, CONCAT(f.firstName, ' ', f.lastName) as faculty,P.term as term
 													FROM Accounts A JOIN Assigned_Building AB
 																						ON A.ACCOUNTNO = AB.ACCOUNTNO
 																				  JOIN REF_Shift S
@@ -149,9 +149,9 @@ if(isset($_SESSION['adminemail'])){
 
 							//sort the rooms into buildings and shifts
 							foreach ($result as $row) {
-								$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+								$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
 							}
-
+							 
 							//we now have a list of buildings
 							// with shifts
 							// with rooms with classes @_@
@@ -209,7 +209,7 @@ if(isset($_SESSION['adminemail'])){
 
 /* ADDITION SECTION */
 							//add the transfered classes for today
-							$query = "SELECT ab.shiftCode as shift, b.buildingName as building, rt.courseCode, rt.venue, rt.section,  rt.dayID, rt.startTime, rt.endTime, CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS time, SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1) as day, CONCAT(f.lastname, ', ', f.firstName) as faculty
+							$query = "SELECT ab.shiftCode as shift , b.buildingName as building, rt.courseCode, rt.venue, rt.section,  rt.dayID, rt.startTime, rt.endTime, CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS time, SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1) as day, CONCAT(f.firstName, ' ', f.lastName) as faculty,P.term as term
 												  FROM MV_RoomTransfer rt JOIN Plantilla p
 																			ON rt.courseCode = p.courseCode
 																		   AND rt.facultyID = p.facultyID
@@ -251,11 +251,11 @@ if(isset($_SESSION['adminemail'])){
 										}
 									}
 								}
-								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
 							}
 
 							//add make-up classes for today
-							$query = "SELECT ab.shiftCode as shift, b.buildingName as building, mu.courseCode, mu.roomCode, mu.section,  mu.dayID, mu.makeUpStartTime, mu.makeUpEndTime, CONCAT(DATE_FORMAT(mu.makeUpStartTime, '%H:%i'), ' - ', DATE_FORMAT(mu.makeUpEndTime, '%H:%i')) AS time, SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1) as day, CONCAT(f.lastname, ', ', f.firstName) as faculty
+							$query = "SELECT ab.shiftCode as shift, mu.term as term, b.buildingName as building, mu.courseCode, mu.roomCode, mu.section,  mu.dayID, mu.makeUpStartTime, mu.makeUpEndTime, CONCAT(DATE_FORMAT(mu.makeUpStartTime, '%H:%i'), ' - ', DATE_FORMAT(mu.makeUpEndTime, '%H:%i')) AS time, SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1) as day, CONCAT(f.firstName, ' ', f.lastName) as faculty,P.term as term
 											   FROM MV_FacultyMakeUp mu JOIN Plantilla p
 																		  ON mu.courseCode = p.courseCode
 																		 AND mu.facultyID = p.facultyID
@@ -282,10 +282,11 @@ if(isset($_SESSION['adminemail'])){
 											  AND mu.makeUpStartTime BETWEEN s.shiftStart AND s.shiftEnd
 											  AND ab.accountNo = $accountNo;";
 							$result = $dbc->query($query);
-
+							 
 							foreach ($result as $row) {
 								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
-								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['makeUpStartTime'], 'endTime' => $row['makeUpEndTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+							 
+								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['makeUpStartTime'], 'endTime' => $row['makeUpEndTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
 							}
 
 							$currentDate = date('F d, Y');
@@ -302,7 +303,7 @@ if(isset($_SESSION['adminemail'])){
 								<?php
 									$count = 0;
 									$modals = '';
-
+						 
 				          foreach ($buildings as $building => $shifts) {
 				            foreach ($shifts as $shift => $classes) {
 				              echo '<tr>';
@@ -335,9 +336,13 @@ if(isset($_SESSION['adminemail'])){
 																						$modals .=  '<th>Course Code</th>';
 																						$modals .=  '<th>Section</th>';
 																						$modals .=  '<th>Time</th>';
-																						$modals .=  '<th>Room/Venue</th>';
+																						$modals .=  '<th>Room</th>';
 																						$modals .=  '<th>Day</th>';
 																						$modals .=  '<th>Faculty</th>';
+
+																						$modals .= '<th class="hidden" >Term</th>';
+																						$modals .= '<th class="hidden">Code</th>';
+																						$modals .= '<th class="hidden">Remarks</th>';
 																					$modals .=  '</tr>';
 																				$modals .=  '</thead>';
 																				$modals .= '<tbody>';
@@ -349,6 +354,12 @@ if(isset($_SESSION['adminemail'])){
 																							$modals .= "<td>{$class[0]}</td>";
 																							$modals .= "<td>{$class[4]}</td>";
 																							$modals .= "<td>{$class[5]}</td>";
+
+																							$modals .= "<td>{$class[6]}</td>";
+																							$modals .= "<td></td>";
+																							$modals .= "<td></td>";
+
+
 																						$modals .= '</tr>';
 																					}
 																				$modals .= '</tbody>';

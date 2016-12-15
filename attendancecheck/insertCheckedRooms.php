@@ -3,7 +3,7 @@
 	require'../mysql_connect.php';
 	 try{
 	 	 $dbc->begin_transaction();
-	 	$good =1;
+	 	$good =0;
 	 	$dup=0;
 	foreach($_POST['data'] as $key=>$sheet){
 		 	$key = substr($key, 0,2);
@@ -61,13 +61,18 @@
 					if( date("H:i:s") <= ($startTime[0])){
 						throw new Exception();
 					}
-
+					$ssdate =  date('Y:m:d');
 					// duplicate check
-					$dQuery = "Select * from Form_attendance fa join MV_ATTENDANCE ma on fa.formID = ma.formID where fa.date = now() and  ma.coursecode = '{$coursecode}' and ma.facultyId = {$facultyId} and 
+					$dQuery = "Select * from Form_attendance fa join MV_ATTENDANCE ma on fa.formID = ma.formID where fa.date = date(now()) and  ma.coursecode = '{$coursecode}' and ma.facultyId = {$facultyId} and 
 					ma.dayID = '{$day}' and ma.schoolYear = {$year} and ma.term = {$term} and ma.section = '{$section}' ";
+					
 					$d = mysqli_query($dbc, $dQuery);
 
-					if(empty($d)){
+					 
+					$num_row =  mysqli_num_rows($d);
+
+					if($num_row == 0){
+						
 						$insertQuery = 
 							'Insert into MV_ATTENDANCE VALUES("'.$coursecode.'","'.$facultyId.'","'.$day.'" ,"'.$year.'", "'.$term.'","'.$section.'","'.$formID.'","'.$attendaceCode.'","'.$remarks.'")';
 						 
@@ -75,9 +80,9 @@
 						 
 
 						if($success){
-							
+								$good =1;
 						}else{
-							 	$good =0;
+							 
 							/*Echo 'Shift:'.$key.' Line '.$er.' Failed!';*/
 						} 
 

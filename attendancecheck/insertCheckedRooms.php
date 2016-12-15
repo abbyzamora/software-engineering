@@ -4,6 +4,7 @@
 	 try{
 	 	 $dbc->begin_transaction();
 	 	$good =1;
+	 	$dup=0;
 	foreach($_POST['data'] as $key=>$sheet){
 		 	$key = substr($key, 0,2);
 			$errorLine = array();
@@ -67,15 +68,7 @@
 					$d = mysqli_query($dbc, $dQuery);
 
 					if(empty($d)){
-
-
-						
-						
-					}
-					else{
-						 
-					}
-					$insertQuery = 
+						$insertQuery = 
 							'Insert into MV_ATTENDANCE VALUES("'.$coursecode.'","'.$facultyId.'","'.$day.'" ,"'.$year.'", "'.$term.'","'.$section.'","'.$formID.'","'.$attendaceCode.'","'.$remarks.'")';
 						 
 						$success =$dbc->query($insertQuery);
@@ -87,6 +80,15 @@
 							 	$good =0;
 							/*Echo 'Shift:'.$key.' Line '.$er.' Failed!';*/
 						} 
+
+						
+						
+					}
+					else{
+						$dup = 1;
+						 
+					}
+
 					
 					
 
@@ -108,10 +110,14 @@
 			}
 		
 	}
+		if($dup){
+			echo 'Duplicate values are not added.';
+		}
 		if($good){
 				echo 'Success!';
 				$dbc->commit();
 		}
+
 		
 		else 
 		 echo 'Failed!';

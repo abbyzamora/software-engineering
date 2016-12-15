@@ -271,6 +271,7 @@
                                             <div class="col-md-2">
                                                 <select name="section" class="form-control" required>
                                                     <option value=""></option>';
+                                                    // Get Latest School year and Term
                                                     $section = "SELECT section from plantilla where coursecode = '{$_SESSION['coursecode']}' group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
@@ -369,6 +370,7 @@
                                             <div class="col-md-2">
                                                 <select name="section" class="form-control" required>
                                                     <option value=""></option>';
+                                                    // Get Latest Term and Schoolyear
                                                     $section = "SELECT section from plantilla where coursecode = '{$_SESSION['coursecode']}' group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
@@ -950,8 +952,41 @@
                                     $message.='<p> Make up class has conflict with another class!</p>';
                                 }
 
+                                //get info
+                                $getfaculty = "SELECT facultyid, term, schoolyear, roomcode
+                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
+                                               and section ='{$_SESSION['section']}'";
+                                $faculty = mysqli_query($dbc,$getfaculty);
+                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
+
+                                //get faculty department
+                                $getdepartment = "SELECT departmentid from faculty f 
+                                                where f.facultyid = '{$row6['facultyid']}'";
+                                $department = mysqli_query($dbc, $getdepartment);
+                                $row16 = mysqli_fetch_array($department, MYSQLI_ASSOC);
+
+                                // get chairid
+                                $getchair = "SELECT chairid from ref_chair rc join ref_department rd on rc.departmentid = rd.departmentid
+                                            join faculty f on rd.departmentid = f.departmentid 
+                                            where rd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $chair = mysqli_query($dbc, $getchair);
+                                $row15 = mysqli_fetch_array($chair, MYSQLI_ASSOC);
+
+                                // get deanid
+                                $getdean = "SELECT deanid from ref_dean rd join ref_college rc on rd.collegecode = rc.collegecode
+                                            join ref_department rdd on rc.collegecode = rdd.collegecode 
+                                            join faculty f on rdd.departmentid = f.departmentid
+                                            where rdd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $dean = mysqli_query($dbc, $getdean);
+                                $row17 = mysqli_fetch_array($dean, MYSQLI_ASSOC);
+
 
                                 // Insert Faculty attendance Form
+                                $facultyattendanceform = "INSERT into form_facultyattendanceform(facultyid, chairid, deanid, remarks, facultyapproval,
+                                                            chairapproval, deanapproval) VALUES ('{$row6['facultyid']}', '{$row15['chairid']}', 
+                                                            '{$row17['deanid']}', 'remark', NOW(),NOW(),NOW()) ";
+                                $facultyres = mysqli_query($dbc, $facultyattendanceform);
+
 
 
                                 // Get Faculty Attendance Form with last insert id
@@ -962,11 +997,7 @@
 
 
                                 //Insert to Database 
-                                $getfaculty = "SELECT facultyid, term, schoolyear, roomcode
-                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
-                                               and section ='{$_SESSION['section']}'";
-                                $faculty = mysqli_query($dbc,$getfaculty);
-                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
+                                
 
                                 if (!isset($message)){
                                     $insert = "insert into mv_facultymakeup(courseCode, facultyid, dayid, schoolyear, term,
@@ -1077,7 +1108,40 @@
                                     $message.="<p> Class has already been created!";
                                 }
 
-                                // Insert faculty attendance form
+                                //get info
+                                $getfaculty = "SELECT facultyid, term, schoolyear, roomcode
+                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
+                                               and section ='{$_SESSION['section']}'";
+                                $faculty = mysqli_query($dbc,$getfaculty);
+                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
+
+                                //get faculty department
+                                $getdepartment = "SELECT departmentid from faculty f 
+                                                where f.facultyid = '{$row6['facultyid']}'";
+                                $department = mysqli_query($dbc, $getdepartment);
+                                $row16 = mysqli_fetch_array($department, MYSQLI_ASSOC);
+
+                                // get chairid
+                                $getchair = "SELECT chairid from ref_chair rc join ref_department rd on rc.departmentid = rd.departmentid
+                                            join faculty f on rd.departmentid = f.departmentid 
+                                            where rd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $chair = mysqli_query($dbc, $getchair);
+                                $row15 = mysqli_fetch_array($chair, MYSQLI_ASSOC);
+
+                                // get deanid
+                                $getdean = "SELECT deanid from ref_dean rd join ref_college rc on rd.collegecode = rc.collegecode
+                                            join ref_department rdd on rc.collegecode = rdd.collegecode 
+                                            join faculty f on rdd.departmentid = f.departmentid
+                                            where rdd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $dean = mysqli_query($dbc, $getdean);
+                                $row17 = mysqli_fetch_array($dean, MYSQLI_ASSOC);
+
+
+                                // Insert Faculty attendance Form
+                                $facultyattendanceform = "INSERT into form_facultyattendanceform(facultyid, chairid, deanid, remarks, facultyapproval,
+                                                            chairapproval, deanapproval) VALUES ('{$row6['facultyid']}', '{$row15['chairid']}', 
+                                                            '{$row17['deanid']}', 'remark', NOW(),NOW(),NOW()) ";
+                                $facultyres = mysqli_query($dbc, $facultyattendanceform);
 
                                 // Get Faculty Attendance Form with last insert id
                                 // Gawin ko muna max nalang.
@@ -1087,11 +1151,6 @@
 
 
                                 //Insert into database
-                                $getfaculty = "SELECT facultyid, term, schoolyear
-                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
-                                               and section ='{$_SESSION['section']}'";
-                                $faculty = mysqli_query($dbc,$getfaculty);
-                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
 
                                 if (!isset($message)){
                                     $insert = "insert into mv_substitution(coursecode, facultyid, dayid, schoolyear, term,
@@ -1217,7 +1276,7 @@
                                 $amonth = date_format($adate, 'm');
                                 $ayear = date_format($adate, 'Y');
 
-                                echo $_SESSION['room'];
+                                
                                 while ($row4 = mysqli_fetch_array($check3, MYSQLI_ASSOC)){
                                     if (substr(date('D', mktime(0,0,0, $amonth, $aday, $ayear)),0,1) == 'T') {
                                         if (strtoupper(substr(date('D', mktime(0,0,0, $amonth, $aday, $ayear)),1,1)) == 'U') {
@@ -1334,6 +1393,41 @@
                                 }
 
                                 // Insert Faculty attendance form
+                                //get info
+                                $getfaculty = "SELECT facultyid, term, schoolyear, roomcode, starttime, endtime
+                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
+                                               and section ='{$_SESSION['section']}'";
+                                $faculty = mysqli_query($dbc,$getfaculty);
+                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
+
+                                //get faculty department
+                                $getdepartment = "SELECT departmentid from faculty f 
+                                                where f.facultyid = '{$row6['facultyid']}'";
+                                $department = mysqli_query($dbc, $getdepartment);
+                                $row16 = mysqli_fetch_array($department, MYSQLI_ASSOC);
+
+                                // get chairid
+                                $getchair = "SELECT chairid from ref_chair rc join ref_department rd on rc.departmentid = rd.departmentid
+                                            join faculty f on rd.departmentid = f.departmentid 
+                                            where rd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $chair = mysqli_query($dbc, $getchair);
+                                $row15 = mysqli_fetch_array($chair, MYSQLI_ASSOC);
+
+                                // get deanid
+                                $getdean = "SELECT deanid from ref_dean rd join ref_college rc on rd.collegecode = rc.collegecode
+                                            join ref_department rdd on rc.collegecode = rdd.collegecode 
+                                            join faculty f on rdd.departmentid = f.departmentid
+                                            where rdd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $dean = mysqli_query($dbc, $getdean);
+                                $row17 = mysqli_fetch_array($dean, MYSQLI_ASSOC);
+
+
+
+                                // Insert Faculty attendance Form
+                                $facultyattendanceform = "INSERT into form_facultyattendanceform(facultyid, chairid, deanid, remarks, facultyapproval,
+                                                            chairapproval, deanapproval) VALUES ('{$row6['facultyid']}', '{$row15['chairid']}', 
+                                                            '{$row17['deanid']}', 'remark', NOW(),NOW(),NOW()) ";
+                                $facultyres = mysqli_query($dbc, $facultyattendanceform);
 
                                 // Get Faculty Attendance Form with last insert id
                                 // Gawin ko muna max nalang.
@@ -1343,12 +1437,6 @@
 
 
                                 //Insert into database
-                                $getfaculty = "SELECT facultyid, term, schoolyear, starttime, endtime
-                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
-                                               and section ='{$_SESSION['section']}'";
-                                $faculty = mysqli_query($dbc,$getfaculty);
-                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
-
                                 
                                 if ($_POST['type'] == 'RT'){
                                     if (!isset($message)){
@@ -1658,6 +1746,40 @@
                                 }
 
                                 //Insert Faculty Attendance Form
+                                //get info
+                                $getfaculty = "SELECT facultyid, term, schoolyear, roomcode
+                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
+                                               and section ='{$_SESSION['section']}'";
+                                $faculty = mysqli_query($dbc,$getfaculty);
+                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
+
+                                //get faculty department
+                                $getdepartment = "SELECT departmentid from faculty f 
+                                                where f.facultyid = '{$row6['facultyid']}'";
+                                $department = mysqli_query($dbc, $getdepartment);
+                                $row16 = mysqli_fetch_array($department, MYSQLI_ASSOC);
+
+                                // get chairid
+                                $getchair = "SELECT chairid from ref_chair rc join ref_department rd on rc.departmentid = rd.departmentid
+                                            join faculty f on rd.departmentid = f.departmentid 
+                                            where rd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $chair = mysqli_query($dbc, $getchair);
+                                $row15 = mysqli_fetch_array($chair, MYSQLI_ASSOC);
+
+                                // get deanid
+                                $getdean = "SELECT deanid from ref_dean rd join ref_college rc on rd.collegecode = rc.collegecode
+                                            join ref_department rdd on rc.collegecode = rdd.collegecode 
+                                            join faculty f on rdd.departmentid = f.departmentid
+                                            where rdd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $dean = mysqli_query($dbc, $getdean);
+                                $row17 = mysqli_fetch_array($dean, MYSQLI_ASSOC);
+
+
+                                // Insert Faculty attendance Form
+                                $facultyattendanceform = "INSERT into form_facultyattendanceform(facultyid, chairid, deanid, remarks, facultyapproval,
+                                                            chairapproval, deanapproval) VALUES ('{$row6['facultyid']}', '{$row15['chairid']}', 
+                                                            '{$row17['deanid']}', 'remark', NOW(),NOW(),NOW()) ";
+                                $facultyres = mysqli_query($dbc, $facultyattendanceform);
 
                                 // Get Faculty Attendance Form with last insert id
                                 // Gawin ko muna max nalang.
@@ -1667,11 +1789,6 @@
 
 
                                 //Insert to Database 
-                                $getfaculty = "SELECT facultyid, term, schoolyear, roomcode
-                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
-                                               and section ='{$_SESSION['section']}'";
-                                $faculty = mysqli_query($dbc,$getfaculty);
-                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
 
                                 if (!isset($message)){
                                     $insert = "insert into mv_roomtransfer(coursecode, facultyid, dayid, schoolyear, term,
@@ -1887,6 +2004,40 @@
                                 }
                                 
                                 //Insert Faculty Attendance Form
+                                //get info
+                                $getfaculty = "SELECT facultyid, term, schoolyear, roomcode, dayid
+                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
+                                               and section ='{$_SESSION['section']}'";
+                                $faculty = mysqli_query($dbc,$getfaculty);
+                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
+
+                                //get faculty department
+                                $getdepartment = "SELECT departmentid from faculty f 
+                                                where f.facultyid = '{$row6['facultyid']}'";
+                                $department = mysqli_query($dbc, $getdepartment);
+                                $row16 = mysqli_fetch_array($department, MYSQLI_ASSOC);
+
+                                // get chairid
+                                $getchair = "SELECT chairid from ref_chair rc join ref_department rd on rc.departmentid = rd.departmentid
+                                            join faculty f on rd.departmentid = f.departmentid 
+                                            where rd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $chair = mysqli_query($dbc, $getchair);
+                                $row15 = mysqli_fetch_array($chair, MYSQLI_ASSOC);
+
+                                // get deanid
+                                $getdean = "SELECT deanid from ref_dean rd join ref_college rc on rd.collegecode = rc.collegecode
+                                            join ref_department rdd on rc.collegecode = rdd.collegecode 
+                                            join faculty f on rdd.departmentid = f.departmentid
+                                            where rdd.departmentid = '{$row16['departmentid']}' group by 1";
+                                $dean = mysqli_query($dbc, $getdean);
+                                $row17 = mysqli_fetch_array($dean, MYSQLI_ASSOC);
+
+
+                                // Insert Faculty attendance Form
+                                $facultyattendanceform = "INSERT into form_facultyattendanceform(facultyid, chairid, deanid, remarks, facultyapproval,
+                                                            chairapproval, deanapproval) VALUES ('{$row6['facultyid']}', '{$row15['chairid']}', 
+                                                            '{$row17['deanid']}', 'remark', NOW(),NOW(),NOW()) ";
+                                $facultyres = mysqli_query($dbc, $facultyattendanceform);
 
                                 // Get Faculty Attendance Form with last insert id
                                 // Gawin ko muna max nalang.
@@ -1896,11 +2047,6 @@
 
 
                                 //Insert to Database 
-                                $getfaculty = "SELECT facultyid, term, schoolyear, roomcode, dayid 
-                                               from plantilla where coursecode = '{$_SESSION['coursecode']}'
-                                               and section ='{$_SESSION['section']}' group by coursecode";
-                                $faculty = mysqli_query($dbc,$getfaculty);
-                                $row6 = mysqli_fetch_array($faculty,MYSQLI_ASSOC);
 
                                 if (!isset($message)){
                                     $insert = "insert into mv_roomtransfer(coursecode, facultyid, dayid, schoolyear, term,

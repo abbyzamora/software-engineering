@@ -42,13 +42,13 @@
 
 
 						if(  !empty(trim( $subject['Year'])) && !empty(trim($subject['Year'])) && !empty(trim($subject['Section'])) && trim($subject['Year'] )== date('Y') && (trim( $subject['Term']) == 1 ||trim( $subject['Term']) == 2|| trim($subject['Term']) == 3) && $validSection){
-							$coursecode = $subject['Course Code'];
-							$section = $subject['Section'];
-							$year = $subject['Year'];
-							$term = $subject['Term'];
-							$startTime = $subject['Start'];
-							$endTime = $subject['End'];
-							$roomCode = $subject['Room'];
+							$coursecode = trim($subject['Course Code']);
+							$section = trim($subject['Section']);
+							$year = trim($subject['Year']);
+							$term = trim($subject['Term']);
+							$startTime = trim($subject['Start']);
+							$endTime = trim($subject['End']);
+							$roomCode = trim($subject['Room']);
 							 
 							//get Faculty ID
 							/*echo $subject['Faculty'];*/
@@ -84,6 +84,7 @@
 								}else{
 									$ctr++;
 									if($temp){
+										echo $insertQuery;
 										array_push($errorLine,$er);	
 										$temp = false;
 										$good=false;

@@ -26,6 +26,7 @@
 	require_once('../mysql_connect.php');
 	$printname = "select concat(a.firstName,' ', a.lastName) as 'completename', ra.accounttypedescription from accounts a join ref_accounttype ra on a.accounttypeno = ra.accounttypeno where email = '{$_SESSION['adminemail']}'";
 	$printresult = mysqli_query($dbc,$printname);
+
 	$row=mysqli_fetch_array($printresult,MYSQLI_ASSOC);
 ?>
 <body>
@@ -116,7 +117,7 @@
 			</li>
 
 			<li role="presentation" class="divider"></li>
-			
+
 			<li class="parent">
 			    <a href="adminhelpdesk.php"><span><svg class="glyph stroked paperclip"><use xlink:href="#stroked-paperclip"/></svg>Help Desk | FAQs</span></a>
 			</li>
@@ -145,6 +146,7 @@
 				<div class="panel panel-default">
 					<div class="panel-heading"><u>Make-up Classes List</u></div>
 					<div class="panel-body">
+
 						<table data-toggle="table" class="data-table">
 						    <thead>
 							    <tr>
@@ -180,9 +182,9 @@
                        group by 1,2";
 
 									$result = mysqli_query($dbc, $query);
-
+									$count = 0;
 									if($result){
-										$count = 0;
+
 										while($row = mysqli_fetch_array($result, MYSQLI_ASSOC) ){
 											echo '<tr>';
 											echo "<td>{$row['altroom']}</td>";
@@ -225,11 +227,103 @@
 											echo '</tr>';
 										}
 									}
+
 								?>
 							</tbody>
 						</table>
 
 						<div class="panel-heading"><u>Room Transfer List</u></div>
+
+						<table data-toggle="table" class="data-table">
+							<thead>
+								<tr>
+									<th data-field="room">Original Room</th>
+									<th data-field="room">Transfer Room</th>
+									<th data-field="fname">Faculty</th>
+									<th data-field="classTime">Class Time</th>
+									<th data-field="transferDate">Transfer Date</th>
+									<th data-field="actions">Class Details</th>
+								</tr>
+							</thead>
+							<?php
+								$query = "SELECT
+												     p.roomCode as originalRoom,
+											       rt.venue as newRoom,
+												     CONCAT(f.lastname, ', ', f.firstName) as faculty,
+											       CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS time,
+											       DATE_FORMAT(rt.transferDate, '%M %e %Y %a') as transferDate,
+											       rt.courseCode,
+											       rt.section,
+											       rtr.transferDescription
+											  FROM MV_RoomTransfer rt JOIN Faculty f
+																		ON rt.facultyID = f.facultyID
+																	  JOIN Plantilla p
+																		ON rt.courseCode = p.courseCode
+																	   AND rt.facultyID = p.facultyID
+											                           AND rt.dayID = p.dayID
+																	   AND rt.schoolYear = p.schoolYear
+											                           AND rt.term = p.term
+											                           AND rt.section = p.section
+																		  JOIN Ref_RoomTransferReason rtr
+																			ON rt.transferCode = rtr.transferCode
+											WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
+											  AND rt.term = (SELECT MAX(term)
+															FROM MV_RoomTransfer
+														   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+											  AND (rt.transferCode = 'RT'
+												   OR rt.transferCode = 'PR');";
+									$result = $dbc->query($query);
+
+									foreach($result as $row){
+										echo '<tr>';
+											echo "<td>{$row['originalRoom']}</td>";
+											echo "<td>{$row['newRoom']}</td>";
+											echo "<td>{$row['faculty']}</td>";
+											echo "<td>{$row['time']}</td>";
+											echo "<td>{$row['transferDate']}</td>";
+											echo "<td>
+															<button class=\"btn btn-primary btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
+																Details
+															</button>
+
+															<!-- Modal -->
+															<div class=\"modal fade\" id=\"myModal$count\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
+																<div class=\"modal-dialog\">
+																	<div class=\"modal-content\">
+																		<div class=\"modal-header\">
+																			<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
+																			<h4 class=\"modal-title\" id=\"myModalLabel\">Room-transfer</h4>
+																		</div>
+																		<div class=\"modal-body\">
+																			<ul class=\"list-group\" style=\"text-align:left;\">
+																				<li class=\"list-group-item\"><b>Subject:</b> {$row['courseCode']}</li>
+																				<li class=\"list-group-item\"><b>Section:</b>&nbsp;{$row['section']}</li>
+																				<li class=\"list-group-item\"><b>Effective Schedule:</b>&nbsp;{$row['transferDate']} </li>
+																				<li class=\"list-group-item\"><b>Original Room:</b> {$row['originalRoom']}</li>
+																				<li class=\"list-group-item\"><b>Transfer Room:</b> {$row['newRoom']}</li>
+																				<li class=\"list-group-item\"><b>Class Time:</b> {$row['time']}</li>
+																				<li class=\"list-group-item\"><b>Reason:</b> {$row['transferDescription']}</li>
+																			</ul>
+																		<div class=\"modal-footer\">
+																			<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
+																		</div>
+																	</div>
+																	<!-- /.modal-content -->
+																</div>
+																<!-- /.modal-dialog -->
+															</div>
+															<!-- /.modal -->
+														</td>";
+										echo '</tr>';
+										$count++;
+									}
+							?>
+							<tbody>
+
+							</tbody>
+						<table>
+
+						<div class="panel-heading"><u>Alternative Class List</u></div>
 
 						<table data-toggle="table" class="data-table">
 							<thead>
@@ -243,78 +337,179 @@
 								</tr>
 							</thead>
 							<?php
-								$query ="SELECT
-													  p.roomCode AS originalRoom,
-													  CONCAT(f.firstName, ' ', f.lastName) AS faculty,
-													  CONCAT(mrt.starttime, ' - ', mrt.endtime) AS classTime,
-													  DATE_FORMAT(originalDate, '%M, %d %Y - %a') AS originalDate,
-													  DATE_FORMAT(transferDate, '%M, %d %Y - %a') AS transferDate,
-
-													  mrt.courseCode,
-													  p.section,
-													  mrt.venue,
-													  rrt.transferDescription
-
-													FROM mv_roomtransfer mrt JOIN plantilla p
-													              						 ON mrt.courseCode = p.courseCode
-													                          AND mrt.facultyID = p.facultyID
-													                          AND mrt.dayID = p.dayID
-													                          AND mrt.schoolYear = p.schoolYear
-													                          AND mrt.term = p.term
-													                          AND mrt.section = p.section
-													              					 JOIN ref_roomtransferreason rrt
-																			               ON mrt.transferCode = rrt.transferCode
-																		               JOIN faculty f
-																			               ON mrt.facultyID = f.facultyID;";
+								$query = "SELECT p.roomCode,
+														     CONCAT(f.lastname, ', ', f.firstName) as faculty,
+													       CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS time,
+																 DATE_FORMAT(rt.transferDate, '%M %e %Y %a') as transferDate,
+															   DATE_FORMAT(rt.originalDate, '%M %e %Y %a') as originalDate,
+													       rt.courseCode,
+																 rt.section,
+													       CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS altTime,
+													       rt.venue,
+																 rtr.transferDescription
+													  FROM MV_RoomTransfer rt JOIN Faculty f
+																				ON rt.facultyID = f.facultyID
+																			  JOIN Plantilla p
+																				ON rt.courseCode = p.courseCode
+																			   AND rt.facultyID = p.facultyID
+													                           AND rt.dayID = p.dayID
+																			   AND rt.schoolYear = p.schoolYear
+													                           AND rt.term = p.term
+													                           AND rt.section = p.section
+																				JOIN Ref_RoomTransferReason rtr
+                            							ON rt.transferCode = rtr.transferCode
+													WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
+													  AND rt.term = (SELECT MAX(term)
+																	FROM MV_RoomTransfer
+																   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+													  AND (rt.transferCode = 'FT'
+														   OR rt.transferCode = 'AC');";
 								$result = $dbc->query($query);
 							?>
 							<tbody>
 								<?php
 									foreach($result as $row){
 										echo '<tr>';
-											echo "<td>{$row['originalRoom']}</td>";
+											echo "<td>{$row['roomCode']}</td>";
 											echo "<td>{$row['faculty']}</td>";
-											echo "<td>{$row['classTime']}</td>";
+											echo "<td>{$row['time']}</td>";
 											echo "<td>{$row['transferDate']}</td>";
 											echo "<td>{$row['originalDate']}</td>";
-											echo "<td>";
-											echo "<button class=\"btn btn-primary btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
+											echo "<td>
+															<button class=\"btn btn-primary btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
 																Details
-														</button>";
+															</button>
 
-											echo "<!-- Modal -->
-														<div class=\"modal fade\" id=\"myModal$count\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
-															<div class=\"modal-dialog\">
-																<div class=\"modal-content\">
-																	<div class=\"modal-header\">
-																		<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
-																		<h4 class=\"modal-title\" id=\"myModalLabel\">Alternative class</h4>
+															<!-- Modal -->
+															<div class=\"modal fade\" id=\"myModal$count\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
+																<div class=\"modal-dialog\">
+																	<div class=\"modal-content\">
+																		<div class=\"modal-header\">
+																			<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
+																			<h4 class=\"modal-title\" id=\"myModalLabel\">Alternative Class</h4>
+																		</div>
+																		<div class=\"modal-body\">
+																			<ul class=\"list-group\" style=\"text-align:left;\">
+																				<li class=\"list-group-item\"><b>Subject:</b> {$row['courseCode']}</li>
+																				<li class=\"list-group-item\"><b>Section:</b> {$row['section']}</li>
+																				<li class=\"list-group-item\"><b>Original Class Schedule:</b>&nbsp;{$row['originalDate']}</li>
+																				<li class=\"list-group-item\"><b>Alternative Class Schedule:</b>&nbsp;{$row['transferDate']} </li>
+																				<li class=\"list-group-item\"><b>Venue:</b> {$row['venue']}</li>
+																				<li class=\"list-group-item\"><b>Reason:</b> {$row['transferDescription']}</li>
+																			</ul>
+																		<div class=\"modal-footer\">
+																			<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
+																		</div>
 																	</div>
-																	<div class=\"modal-body\">
-																		<ul class=\"list-group\" style=\"text-align:left;\">
-																			<li class=\"list-group-item\"><b>Subject:</b> {$row['courseCode']}</li>
-																			<li class=\"list-group-item\"><b>Section:</b> {$row['section']}</li>
-																			<li class=\"list-group-item\"><b>Venue:</b> {$row['venue']}</li>
-																			<li class=\"list-group-item\"><b>Transfer Reason: </b>{$row['transferDescription']}</li>
-																		</ul>
-																	<div class=\"modal-footer\">
-																		<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
-																	</div>
+																	<!-- /.modal-content -->
 																</div>
-																<!-- /.modal-content -->
+																<!-- /.modal-dialog -->
 															</div>
-															<!-- /.modal-dialog -->
-														</div>
-														<!-- /.modal -->";
-
-											echo "</td>";
+															<!-- /.modal -->
+														</td>";
 										echo '</tr>';
 
 										$count++;
 									}
 								?>
 							</tbody>
+
 						<table>
+
+							<div class="panel-heading"><u>Change in time List</u></div>
+
+							<table data-toggle="table" class="data-table">
+								<thead>
+									<tr>
+										<th data-field="room">Original Room</th>
+										<th data-field="fname">Faculty</th>
+										<th data-field="cllassTime">Original Class Time</th>
+										<th data-field="cllassTime">New Class Time</th>
+										<th data-field="transferDate">Effective Date</th>
+										<th data-field="actions">Class Details</th>
+									</tr>
+								</thead>
+
+								<?php
+									$query = "SELECT
+														   p.roomCode as originalRoom,
+														   rt.venue as newRoom,
+														   CONCAT(f.lastname, ', ', f.firstName) as faculty,
+														   CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS originalTime,
+														   CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS newTime,
+															 DATE_FORMAT(rt.transferDate, '%M %e %Y %a') as effectiveDate,
+														   rt.courseCode,
+														   rt.section,
+														   rtr.transferDescription
+														  FROM MV_RoomTransfer rt JOIN Faculty f
+																					ON rt.facultyID = f.facultyID
+																				  JOIN Plantilla p
+																					ON rt.courseCode = p.courseCode
+																				   AND rt.facultyID = p.facultyID
+														                           AND rt.dayID = p.dayID
+																				   AND rt.schoolYear = p.schoolYear
+														                           AND rt.term = p.term
+														                           AND rt.section = p.section
+																					  JOIN Ref_RoomTransferReason rtr
+																						ON rt.transferCode = rtr.transferCode
+														WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
+														  AND rt.term = (SELECT MAX(term)
+																		FROM MV_RoomTransfer
+																	   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+														  AND rt.transferCode = 'CT';";
+									$result = $dbc->query($query);
+								?>
+								<tbody>
+									<?php
+										foreach($result as $row){
+											echo '<tr>';
+												echo "<td>{$row['originalRoom']}</td>";
+												echo "<td>{$row['faculty']}</td>";
+
+												echo "<td>{$row['originalTime']}</td>";
+												echo "<td>{$row['newTime']}</td>";
+												echo "<td>{$row['effectiveDate']}</td>";
+												echo "<td>
+																<button class=\"btn btn-primary btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
+																	Details
+																</button>
+
+																<!-- Modal -->
+																<div class=\"modal fade\" id=\"myModal$count\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
+																	<div class=\"modal-dialog\">
+																		<div class=\"modal-content\">
+																			<div class=\"modal-header\">
+																				<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
+																				<h4 class=\"modal-title\" id=\"myModalLabel\">Alternative Class</h4>
+																			</div>
+																			<div class=\"modal-body\">
+																				<ul class=\"list-group\" style=\"text-align:left;\">
+																					<li class=\"list-group-item\"><b>Subject:</b> {$row['courseCode']}</li>
+																					<li class=\"list-group-item\"><b>Section:</b> {$row['section']}</li>
+																					<li class=\"list-group-item\"><b>Effective Date:</b> {$row['effectiveDate']}</li>
+																					<li class=\"list-group-item\"><b>Original Class Time:</b>&nbsp;{$row['originalTime']}</li>
+																					<li class=\"list-group-item\"><b>New Class Time:</b>&nbsp;{$row['newTime']} </li>
+																					<li class=\"list-group-item\"><b>Original Room:</b> {$row['originalRoom']}</li>
+																					<li class=\"list-group-item\"><b>Transfer Room:</b> {$row['newRoom']}</li>
+																				</ul>
+																			<div class=\"modal-footer\">
+																				<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
+																			</div>
+																		</div>
+																		<!-- /.modal-content -->
+																	</div>
+																	<!-- /.modal-dialog -->
+																</div>
+																<!-- /.modal -->
+															</td>";
+											echo '</tr>';
+
+											$count++;
+										}
+									?>
+								</tbody>
+
+							<table>
 				</div><!-- panel-body -->
 			</div><!-- panel -->
 		</div><!--/.col-md-12-->

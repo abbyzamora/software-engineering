@@ -226,7 +226,9 @@
                                     <select name = "coursecode" class="form-control" required>
                                         <?php
                                             $query = "SELECT C.COURSECODE AS 'COURSECODE'
-                                                        FROM PLANTILLA C GROUP BY 1";
+                                                        FROM PLANTILLA C 
+                                                        WHERE TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE()))
+                                                        GROUP BY 1";
                                             $printresult = mysqli_query($dbc,$query);
                                             echo "<option value=''>--Select Course Code--</option>";
                                                 while($row=mysqli_fetch_array($printresult,MYSQLI_ASSOC)){
@@ -272,7 +274,10 @@
                                                 <select name="section" class="form-control" required>
                                                     <option value=""></option>';
                                                     // Get Latest School year and Term
-                                                    $section = "SELECT section from plantilla where coursecode = '{$_SESSION['coursecode']}' group by section";
+                                                    $section = "SELECT section from plantilla 
+                                                                where coursecode = '{$_SESSION['coursecode']}'
+                                                                and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE()))
+                                                                group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
                                                     while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
@@ -358,7 +363,12 @@
                                             </center>
                                         </div>';
                             echo   '</form>';
+
+                            
+                            
                             }
+
+                            
 
                             if (isset($_POST['sub'])){
                                 $_SESSION['coursecode'] = $_POST['coursecode'];
@@ -371,7 +381,10 @@
                                                 <select name="section" class="form-control" required>
                                                     <option value=""></option>';
                                                     // Get Latest Term and Schoolyear
-                                                    $section = "SELECT section from plantilla where coursecode = '{$_SESSION['coursecode']}' group by section";
+                                                    $section = "SELECT section from plantilla 
+                                                    where coursecode = '{$_SESSION['coursecode']}'
+                                                    and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE())) 
+                                                    group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
                                                     while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
@@ -417,6 +430,7 @@
                                             <button type="submit" class="btn btn-primary" name="substitution"> Create Class </button>
                                             </center>
                                         </div>';
+
                                 echo '</form>';
                             }
 
@@ -430,7 +444,10 @@
                                             <div class="col-md-2">
                                                 <select name="section" class="form-control" required>
                                                     <option value=""></option>';
-                                                    $section = "SELECT section from plantilla where coursecode = '{$_SESSION['coursecode']}' group by section";
+                                                    $section = "SELECT section from plantilla 
+                                                                where coursecode = '{$_SESSION['coursecode']}' 
+                                                                and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE())) 
+                                                                group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
                                                     while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
@@ -479,7 +496,10 @@
                                             <div class="col-md-2">
                                                 <select name="section" class="form-control" required>
                                                     <option value=""></option>';
-                                                    $section = "SELECT section from plantilla where coursecode = '{$_SESSION['coursecode']}' group by section";
+                                                    $section = "SELECT section from plantilla 
+                                                                where coursecode = '{$_SESSION['coursecode']}' 
+                                                                and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE())) 
+                                                                group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
                                                     while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
@@ -557,7 +577,10 @@
                                             <div class="col-md-2">
                                                 <select name="section" class="form-control" required>
                                                     <option value=""></option>';
-                                                    $section = "SELECT section from plantilla where coursecode = '{$_SESSION['coursecode']}' group by section";
+                                                    $section = "SELECT section from plantilla 
+                                                                where coursecode = '{$_SESSION['coursecode']}' 
+                                                                and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE())) 
+                                                                group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
                                                     while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
@@ -2303,7 +2326,8 @@
              $('#myModalCheckedRooms').modal('hide');
         });
             
-        </script>   
+        </script>  
+
 
     </body>
 

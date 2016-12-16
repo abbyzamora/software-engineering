@@ -410,7 +410,7 @@ $('button').addClass("btn btn-primary btn-xs").css({'color':'white','font-size':
 		if(output){
 			$.post({
 
-		      url: '/swengg/attendancecheck/insert.php',
+		      url: 'insert.php',
 		      data:output,
 		      success:function(data){
 		        alert(data);
@@ -432,7 +432,7 @@ $('button').addClass("btn btn-primary btn-xs").css({'color':'white','font-size':
 		if(output){
 			$.post({
 
-		      url: '/swengg/attendancecheck/insertCheckedRooms.php',
+		      url: 'insertCheckedRooms.php',
 		      data:{'data':output},
 		      success:function(data){
 		        alert(data);

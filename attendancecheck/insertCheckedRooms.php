@@ -49,11 +49,22 @@
 					$day = $subject['Day'] ;
 				 
 					$year = date('Y');
-						
+
+					//Time checker
+					$selectQuery = "Select startTime from plantilla where coursecode = '{$coursecode}' and facultyId = {$facultyId} and 
+					dayID = '{$day}' and schoolYear = {$year} and term = {$term} and section = '{$section}' ";
+					$start = mysqli_query($dbc, $selectQuery);
+					$startTime =  mysqli_fetch_array($start);
+					 
+					if(time() >= strtotime($startTime[0])){
+						throw new Exception();
+					}
+
+					
 						 
 					$insertQuery = 
 						'Insert into MV_ATTENDANCE VALUES("'.$coursecode.'","'.$facultyId.'","'.$day.'" ,"'.$year.'", "'.$term.'","'.$section.'","'.$formID.'","'.$attendaceCode.'","'.$remarks.'")';
-					
+					 
 					$success =$dbc->query($insertQuery);
 					 
 
@@ -90,7 +101,7 @@
 		else 
 		 echo 'Failed!';
 	}catch(Exception $e){
-		Echo 'Invalid Format!';
+		echo "Failed!";
 		 $dbc->rollback();
 	}
 	

@@ -365,7 +365,7 @@ $row=mysqli_fetch_array($printresult,MYSQLI_ASSOC)
 		if(output){
 			$.post({
 
-		      url: '/swengg/attendancecheck/insert.php',
+		      url: 'insert.php',
 		      data:output,
 		      success:function(data){
 		        alert(data);
@@ -387,7 +387,7 @@ $row=mysqli_fetch_array($printresult,MYSQLI_ASSOC)
 		if(output){
 			$.post({
 
-		      url: '/swengg/attendancecheck/insertCheckedRooms.php',
+		      url: 'insertCheckedRooms.php',
 		      data:{'data':output},
 		      success:function(data){
 		        alert(data);

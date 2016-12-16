@@ -56,9 +56,10 @@
 					$start = mysqli_query($dbc, $selectQuery);
 					$startTime =  mysqli_fetch_array($start);
 					 
-					if(time() >= strtotime($startTime[0])){
+					if(time() <= strtotime($startTime[0])){
 						throw new Exception();
 					}
+
 
 					
 						 

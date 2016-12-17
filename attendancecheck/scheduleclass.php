@@ -218,7 +218,7 @@
             <div class="row">
                 <div class="panel panel-default">
                     <div class="panel-heading">Schedule a Class</div>
-                    <div class="panel-body">
+                    <div class="panel-body" id="schedule">
                         <form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
                             <div class="col-md-12">
                                 <center>
@@ -226,9 +226,9 @@
                                     <select name = "coursecode" class="form-control" required>
                                         <?php
                                             $query = "SELECT C.COURSECODE AS 'COURSECODE'
-                                                        FROM PLANTILLA C 
-                                                        WHERE TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE()))
-                                                        GROUP BY 1";
+                                                       FROM PLANTILLA C 
+                                                       WHERE TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
+                                                    GROUP BY 1     ";
                                             $printresult = mysqli_query($dbc,$query);
                                             echo "<option value=''>--Select Course Code--</option>";
                                                 while($row=mysqli_fetch_array($printresult,MYSQLI_ASSOC)){
@@ -276,7 +276,8 @@
                                                     // Get Latest School year and Term
                                                     $section = "SELECT section from plantilla 
                                                                 where coursecode = '{$_SESSION['coursecode']}'
-                                                                and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE()))
+                                                                and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
+                                                                and schoolyear = YEAR(CURDATE())
                                                                 group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
@@ -383,7 +384,8 @@
                                                     // Get Latest Term and Schoolyear
                                                     $section = "SELECT section from plantilla 
                                                     where coursecode = '{$_SESSION['coursecode']}'
-                                                    and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE())) 
+                                                    and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
+                                                    and schoolyear = YEAR(CURDATE()) 
                                                     group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
@@ -446,7 +448,8 @@
                                                     <option value=""></option>';
                                                     $section = "SELECT section from plantilla 
                                                                 where coursecode = '{$_SESSION['coursecode']}' 
-                                                                and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE())) 
+                                                                and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
+                                                                and schoolyear = YEAR(CURDATE()) 
                                                                 group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
@@ -461,21 +464,20 @@
                                             <div class="col-md-2">
                                                 <input type="text" name="room" class="form-control" required>
                                             </div>
+                                            <div class="col-md-2">
+                                                <label> <input type="radio" name="type" id="optionsRadios1" value="RT" onclick="enabledate()" > Temporary Transfer </label>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label> <input type="radio" name="type" id="optionsRadios1" value="PR" onclick="disabledate()"> Permanent Transfer </label>
+                                            </div> 
+                                        </div>
+                                        <div class="col-md-12 col-md-offset-3">
                                             <div class="col-md-2"> 
                                                 <label> Transfer Date: </label>
                                             </div>
                                             <div class="col-md-3">
-                                                <input type="date" name="transferdate" class="form-control" required>
+                                                <input type="date" name="transferdate" id="transferdate" class="form-control" required>
                                             </div>
-                                        </div>
-                                        <div class="col-md-12 col-md-offset-3">
-                                            <div class="col-md-3">
-                                                <label> <input type="radio" name="type" id="optionsRadios1" value="RT"> Temporary Transfer </label>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label> <input type="radio" name="type" id="optionsRadios1" value="PR"> Permanent Transfer </label>
-                                            </div>
-                                            
                                         </div>
                                         <div class="col-md-12"> <br> 
                                             <center>
@@ -498,7 +500,8 @@
                                                     <option value=""></option>';
                                                     $section = "SELECT section from plantilla 
                                                                 where coursecode = '{$_SESSION['coursecode']}' 
-                                                                and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE())) 
+                                                                and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
+                                                                and schoolyear = YEAR(CURDATE()) 
                                                                 group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
@@ -579,7 +582,8 @@
                                                     <option value=""></option>';
                                                     $section = "SELECT section from plantilla 
                                                                 where coursecode = '{$_SESSION['coursecode']}' 
-                                                                and TERM = (SELECT MAX(TERM) from plantilla where schoolyear = YEAR(CURDATE())) 
+                                                                and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
+                                                                and schoolyear = YEAR(CURDATE()) 
                                                                 group by section";
                                                     $getsection = mysqli_query($dbc, $section);
                                                     
@@ -685,6 +689,9 @@
                                 echo '</form>';
                             }
                         ?>
+
+
+
                         <?php
                             if (isset($_POST['addmakeup'])){
                                 $message = NULL;
@@ -708,14 +715,34 @@
                                 $day = date_format($date, 'd');
                                 $month = date_format($date, 'm');
                                 $year = date_format($date, 'Y');
+
+                                $getendterm = "SELECT end from term 
+                                where term = (SELECT TERM from term where MONTH(CURDATE()) between start and end)";
+                                $endterm = mysqli_query($dbc, $getendterm);
+                                $row18 = mysqli_fetch_array($endterm, MYSQLI_ASSOC);
+
+                                $getmakeupclass = "SELECT absentdate from mv_facultymakeup 
+                                where coursecode = '{$_SESSION['coursecode']}' and section = '{$_SESSION['section']}'";
+                                $makeupclass = mysqli_query($dbc, $getmakeupclass);
+
+                                if ($makeupclass){
+                                    while ($row19 = mysqli_fetch_array($makeupclass, MYSQLI_ASSOC)){
+                                        if ($_POST['misseddate'] == $row19['absentdate']){
+                                            $_SESSION['misseddate'] = NULL;
+                                            $message.="<p> Missed date has already been registered!";
+                                        }
+                                    }
+                                }
+                                
+
                                 if (date('D',mktime(0, 0, 0, $month, $day, $year )) == 'Sun') {
                                     $_SESSION['misseddate'] = NULL;
                                     $message.="<p> Missed Date cannot be sunday!";
                                 } else if ($_POST['misseddate'] > date('Y-m-d')){
                                     $_SESSION['misseddate'] = NULL;
-                                    $message = "<p> Missed Class Date Cannot be later than today!";
-                                }
-                                else{
+                                    $message.= "<p> Missed Class Date Cannot be later than today!";
+                                } 
+                                else {
                                     $_SESSION['misseddate'] = $_POST['misseddate'];
                                 }
 
@@ -735,6 +762,11 @@
                                     } else if ($_POST['makeupdate'] <= date('Y-m-d')){
                                         $_SESSION['makeupdate'] = NULL;
                                         $message = "<p> Makeup Class Date Cannot be earlier than today!";
+                                    }else if (date('n',mktime(0, 0, 0, $mumonth, $muday, $muyear )) > $row18['end'] || 
+                                            date('Y',mktime(0, 0, 0, $mumonth, $muday, $muyear )) > date('Y')) {
+
+                                        $_SESSION['makeupdate'] = NULL;
+                                        $message.= "<p> Make up class cannot be a date after the end of the term!";
                                     }
                                     else{
                                         $_SESSION['makeupdate'] = $_POST['makeupdate'];
@@ -1043,16 +1075,37 @@
                                 }
                             }
 
+                            
+
                             if (isset($_POST['substitution'])){
                                 $message = NULL;
                                 $_SESSION['section'] = $_POST['section'];
                                 $_SESSION['facultysub'] = $_POST['facultysub'];
 
+                                $date = new DateTime($_POST['subdate']);
+                                $day = date_format($date, 'd');
+                                $month = date_format($date, 'm');
+                                $year = date_format($date, 'Y');
+
+                                $getendterm = "SELECT end from term 
+                                where term = (SELECT TERM from term where MONTH(CURDATE()) between start and end)";
+                                $endterm = mysqli_query($dbc, $getendterm);
+                                $row18 = mysqli_fetch_array($endterm, MYSQLI_ASSOC);
+
+                                
+
                                 //Subdate checking, must be advanced
-                                 if ($_POST['subdate'] <= date('Y-m-d')){
+                                if ($_POST['subdate'] <= date('Y-m-d')){
                                     $_SESSION['subdate'] = NULL;
                                     $message = "<p> Class Date must be later than today!";
-                                } else {
+                                } else if (date('D',mktime(0, 0, 0, $month, $day, $year )) == 'Sun') {
+                                    $_SESSION['subdate'] = NULL;
+                                    $message.="<p> Class Date cannot be sunday!";
+                                } else if (date('n',mktime(0, 0, 0, $month, $day, $year )) > $row18['end'] || 
+                                            date('Y',mktime(0, 0, 0, $month, $day, $year )) > date('Y')) {
+                                    $_SESSION['subdate'] = NULL;
+                                    $message.="<p> Class date cannot be later than the term!";
+                                }else {
                                     $_SESSION['subdate'] = $_POST['subdate'];
                                 }
 
@@ -1210,11 +1263,93 @@
                                     $message.="<p>Invalid room!";
                                 }
 
-                                if ($_POST['transferdate'] <= date('Y-m-d')){
-                                    $_SESSION['transferdate'] = NULL;
-                                    $message.= "<p> Transfer Date must be later than today!";
+                                if (isset($_POST['transferdate'])){
+                                    $date = new DateTime($_POST['transferdate']);
+                                    $day = date_format($date, 'd');
+                                    $month = date_format($date, 'm');
+                                    $year = date_format($date, 'Y');
+
+                                    $getendterm = "SELECT end from term 
+                                    where term = (SELECT TERM from term where MONTH(CURDATE()) between start and end)";
+                                    $endterm = mysqli_query($dbc, $getendterm);
+                                    $row18 = mysqli_fetch_array($endterm, MYSQLI_ASSOC);
+
+                                    if ($_POST['transferdate'] <= date('Y-m-d')){
+                                        $_SESSION['transferdate'] = NULL;
+                                        $message.= "<p> Transfer Date must be later than today!";
+                                    }else if (date('D',mktime(0, 0, 0, $month, $day, $year )) == 'Sun') {
+                                        $_SESSION['transferdate'] = NULL;
+                                        $message.="<p> Transfer date cannot be Sunday!";
+                                    }else if (date('n',mktime(0, 0, 0, $month, $day, $year )) > $row18['end'] || 
+                                                date('Y',mktime(0, 0, 0, $month, $day, $year )) > date('Y')) {
+                                        $_SESSION['transferdate'] = NULL;
+                                        $message.="<p> Class date cannot be later than the term!";
+                                    }else {
+                                        $_SESSION['transferdate'] = $_POST['transferdate'];
+                                    }  
                                 } else {
-                                    $_SESSION['transferdate'] = $_POST['transferdate'];
+                                    // Get Nearest Future Date where it is a Class Day
+                                    // Get Day id
+                                    $classday = "SELECT dayid from plantilla where coursecode = '{$_SESSION['coursecode']}'";
+                                    $getclass = mysqli_query($dbc, $classday);
+
+                                    while ($row19 = mysqli_fetch_array($getclass, MYSQLI_ASSOC)){
+                                        $today = new DateTime(date('Y-m-d'));
+
+                                        $tday = date_format($today, 'd');
+                                        $tmonth = date_format($today, 'm');
+                                        $tyear = date_format($today, 'Y');
+
+                                        $ctr = 0;
+                                        $numberarray = array();
+                                        $datearray = array();
+                                        $newdate = strtotime(date('Y-m-d'));
+
+                                        while (substr(date('D', mktime(0,0,0, $tmonth, $tday, $tyear)),0,1) != $row19['dayid']){
+                                            $newdate = strtotime('+1day',$newdate);
+                                            $ctr++;
+
+                                            $new = new DateTime(date('Y-m-d',$newdate));
+                                            $tday = date_format($new, 'd');
+                                            $tmonth = date_format($new, 'm');
+                                            $tyear = date_format($new, 'Y');
+
+                                            
+                                        }
+
+                                        
+                                        array_push($numberarray, $ctr);
+                                        array_push($datearray, date('Y-m-d', $newdate));
+                                    }
+
+                                    // check if which is higher among the two (foresee if isa lang yung class day)
+                                    
+                                    $first = $numberarray[0];
+
+                                    for ($i = 0; $i < sizeof($numberarray); $i++){
+                                        $check = $numberarray[$i];
+
+                                        if ($check < $first){
+                                            $_SESSION['transferdate'] = $datearray[$i];
+                                        } else {
+                                            $_SESSION['transferdate'] = $datearray[0];
+                                        }
+                                    }
+
+                                }
+                                
+                                $gettransfer = "SELECT transferdate from mv_roomtransfer 
+                                where coursecode = '{$_SESSION['coursecode']}' and section = '{$_SESSION['section']}'
+                                and transfercode = 'PR' or transfercode = 'RT'";
+                                $transfer = mysqli_query($dbc, $gettransfer);
+
+                                if ($transfer){
+                                    while ($row21 = mysqli_fetch_array($transfer, MYSQLI_ASSOC)){
+                                        if ($_SESSION['transferdate'] == $row21['transferdate']){
+                                            
+                                            $message.="<p> Transfer Date has already been registered";
+                                        }
+                                    }
                                 }
 
                                 //Transfer Date should be a class date, capture dayid
@@ -1401,7 +1536,7 @@
                                     if ($_SESSION['transferdate'] == "{$row8['transferdate']}" && "{$row14['starttime']}" >= "{$row8['starttime']}"
                                     && "{$row14['endtime']}" <= "{$row8['endtime']}" && $_SESSION['room'] == "{$row8['venue']}"){
                                         $valid4 = 1;
-                                    }else if ($_SESSION['altdate'] == "{$row8['transferdate']}" && "{$row14['starttime']}" >= "{$row8['starttime']}"
+                                    }else if ($_SESSION['transferdate'] == "{$row8['transferdate']}" && "{$row14['starttime']}" >= "{$row8['starttime']}"
                                     && "{$row14['starttime']}" <= "{$row8['endtime']}" || "{$row14['endtime']}" <= "{$row8['endtime']}" && 
                                     "{$row14['endtime']}" >= "{$row8['starttime']}"){
 
@@ -1477,13 +1612,14 @@
                                     }
                                 }
                                 if ($_POST['type'] = 'PR'){
+                                    $transferdate = date('Y-m-d');
                                     if (!isset($message)){
                                         $insert = "INSERT into mv_roomtransfer(coursecode, facultyid, dayid, schoolyear, term,
                                                    section, facultyattendanceformcode, transfercode, transferdate, venue,
                                                    starttime, endtime) 
                                                    VALUES ('{$_SESSION['coursecode']}', '{$row6['facultyid']}', '$gday',
                                                     '{$row6['schoolyear']}', '{$row6['term']}', '{$_SESSION['section']}', '{$get['formid']}',
-                                                    'PR', '{$_SESSION['transferdate']}', '{$_SESSION['room']}', '{$row6['starttime']}', '{$row6['endtime']}')";
+                                                    'PR', '$transferdate', '{$_SESSION['room']}', '{$row6['starttime']}', '{$row6['endtime']}')";
                                         $insertres = mysqli_query($dbc,$insert);
 
                                         //Update Plantilla
@@ -1519,17 +1655,59 @@
                                     $message.="<p>Invalid room code";
                                 }
 
+                                $getchangeintime = "SELECT originaldate from mv_roomtransfer
+                                where coursecode = '{$_SESSION['coursecode']}' and section = '{$_SESSION['section']}'
+                                and transfercode = 'CT'";
+                                $changeintime = mysqli_query($dbc, $getchangeintime);
+
+                                if ($changeintime){
+                                    while ($row22 = mysqli_fetch_array($changeintime, MYSQLI_ASSOC)){
+                                        if ($_POST['change'] == $row22['originaldate']){
+                                            $message.="<p> Change in time has already been registered!";
+                                        }
+                                    }
+                                } 
+
+                                $cdate = new DateTime($_POST['change']);
+                                $cday = date_format($cdate, 'd');
+                                $cmonth = date_format($cdate, 'm');
+                                $cyear = date_format($cdate, 'Y');
+
+                                $date = new DateTime($_POST['altdate']);
+                                $day = date_format($date, 'd');
+                                $month = date_format($date, 'm');
+                                $year = date_format($date, 'Y');
+
+                                $getendterm = "SELECT end from term 
+                                where term = (SELECT TERM from term where MONTH(CURDATE()) between start and end)";
+                                $endterm = mysqli_query($dbc, $getendterm);
+                                $row18 = mysqli_fetch_array($endterm, MYSQLI_ASSOC);
+
                                 if ($_POST['altdate'] <= date('Y-m-d')){
                                     $_SESSION['altdate'] = NULL;
                                     $message.= "<p> Alternative Class Date must be later than today!";
-                                } else {
+                                } else if (date('D',mktime(0, 0, 0, $month, $day, $year )) == 'Sun') {
+                                    $_SESSION['altdate'] = NULL;
+                                    $message.="<p> Alternative Class date cannot be Sunday!";
+                                }else if (date('n',mktime(0, 0, 0, $month, $day, $year )) > $row18['end'] || 
+                                            date('Y',mktime(0, 0, 0, $month, $day, $year )) > date('Y')) {
+                                    $_SESSION['altdate'] = NULL;
+                                    $message.="<p> Alternative Class date cannot be later than the term!";
+                                }else {
                                     $_SESSION['altdate'] = $_POST['altdate'];
                                 }
 
                                 if ($_POST['change'] <= date('Y-m-d')){
                                     $_SESSION['change'] = NULL;
                                     $message.= "<p> Change in time must be later than today!";
-                                } else {
+                                }else if (date('D',mktime(0, 0, 0, $month, $day, $year )) == 'Sun') {
+                                    $_SESSION['change'] = NULL;
+                                    $message.="<p> Change in time cannot be Sunday!";
+                                }else if (date('n',mktime(0, 0, 0, $month, $day, $year )) > $row18['end'] || 
+                                            date('Y',mktime(0, 0, 0, $month, $day, $year )) > date('Y')) {
+                                    $_SESSION['change'] = NULL;
+                                    $message.="<p> Change in time cannot be later than the term!";
+                                }else {
                                     $_SESSION['change'] = $_POST['change'];
                                 }   
 
@@ -1840,10 +2018,41 @@
                                 $_SESSION['type'] = $_POST['type'];
                                 $_SESSION['venue'] = $_POST['venue'];
 
+
+                                $getalternatives = "SELECT transferdate from mv_roomtransfer
+                                where coursecode ='{$_SESSION['coursecode']}' and section = '{$_SESSION['section']}'
+                                and transfercode = 'FT' or transfercode = 'AC'";
+                                $alternatives = mysqli_query($dbc, $getalternatives);
+
+                                if ($alternatives){
+                                    while ($row23 = mysqli_fetch_array($alternatives, MYSQLI_ASSOC)){
+                                        if ($_POST['altdate'] == $row23['transferdate']){
+                                            $message.="<p> Alternative class date has already been registered!";
+                                        }
+                                    }
+                                }
+
+                                $date = new DateTime($_POST['altdate']);
+                                $day = date_format($date, 'd');
+                                $month = date_format($date, 'm');
+                                $year = date_format($date, 'Y');
+
+                                $getendterm = "SELECT end from term 
+                                where term = (SELECT TERM from term where MONTH(CURDATE()) between start and end)";
+                                $endterm = mysqli_query($dbc, $getendterm);
+                                $row18 = mysqli_fetch_array($endterm, MYSQLI_ASSOC);
+
                                 if ($_POST['altdate'] <= date('Y-m-d')){
                                     $_SESSION['altdate'] = NULL;
                                     $message.= "<p> Alternative Class Date must be later than today!";
-                                } else {
+                                }else if (date('D',mktime(0, 0, 0, $month, $day, $year )) == 'Sun') {
+                                    $_SESSION['altdate'] = NULL;
+                                    $message.="<p> Alternative Class date cannot be Sunday!";
+                                }else if (date('n',mktime(0, 0, 0, $month, $day, $year )) > $row18['end'] || 
+                                            date('Y',mktime(0, 0, 0, $month, $day, $year )) > date('Y')) {
+                                    $_SESSION['altdate'] = NULL;
+                                    $message.="<p> Alternative Class date cannot be later than the term!";
+                                }else {
                                     $_SESSION['altdate'] = $_POST['altdate'];
                                 }
 
@@ -2328,6 +2537,19 @@
             
         </script>  
 
+        <script type="text/javascript">
+          function disabledate()
+          {
+            $("#transferdate").attr('disabled','true');
+          }
+        </script>
+
+         <script type="text/javascript">
+          function enabledate()
+          {
+            $("#transferdate").removeAttr('disabled');
+          }
+        </script>
 
     </body>
 

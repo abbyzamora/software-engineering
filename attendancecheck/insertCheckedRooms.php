@@ -55,8 +55,9 @@
 					dayID = '{$day}' and schoolYear = {$year} and term = {$term} and section = '{$section}' ";
 					$start = mysqli_query($dbc, $selectQuery);
 					$startTime =  mysqli_fetch_array($start);
-					 
-					if(time() <= strtotime($startTime[0])){
+					date_default_timezone_set("Asia/Manila");
+					
+					if( date("H:i:s") <= ($startTime[0])){
 						throw new Exception();
 					}
 

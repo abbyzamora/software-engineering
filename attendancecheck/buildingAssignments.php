@@ -179,7 +179,7 @@ if(isset($_SESSION['adminemail'])){
 										foreach($classes as $index => $class){
 												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
 													unset($buildings[$building][$shift][$index]);
-													break;
+
 												}
 										}
 									}
@@ -202,7 +202,7 @@ if(isset($_SESSION['adminemail'])){
 										foreach($classes as $index => $class){
 												if($class[2] == $row['section'] AND $class[1] == $row['courseCode']){
 													unset($buildings[$building][$shift][$index]);
-													break;
+
 												}
 										}
 									}
@@ -249,7 +249,7 @@ if(isset($_SESSION['adminemail'])){
 										foreach($classes as $index => $class){
 												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
 													unset($buildings[$building][$shift][$index]);
-													break;
+													
 												}
 										}
 									}

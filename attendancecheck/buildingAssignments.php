@@ -199,6 +199,7 @@ if(isset($_SESSION['adminemail'])){
 										}
 									}
 								}
+							}
 
 							// remove make up classes
 							$result = $dbc->query("SELECT

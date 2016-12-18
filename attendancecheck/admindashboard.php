@@ -144,6 +144,7 @@
 
 			<div class="col-md-12">
 				<div class="panel panel-default">
+
 					<div class="panel-heading"><u>Make-up Classes List</u></div>
 					<div class="panel-body">
 
@@ -247,32 +248,32 @@
 							</thead>
 							<?php
 								$query = "SELECT
-												     p.roomCode as originalRoom,
-											       rt.venue as newRoom,
-												     CONCAT(f.lastname, ', ', f.firstName) as faculty,
-											       CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS time,
-											       DATE_FORMAT(rt.transferDate, '%M %e %Y %a') as transferDate,
-											       rt.courseCode,
-											       rt.section,
-											       rtr.transferDescription
-											  FROM MV_RoomTransfer rt JOIN Faculty f
-																		ON rt.facultyID = f.facultyID
-																	  JOIN Plantilla p
-																		ON rt.courseCode = p.courseCode
-																	   AND rt.facultyID = p.facultyID
-											                           AND rt.dayID = p.dayID
-																	   AND rt.schoolYear = p.schoolYear
-											                           AND rt.term = p.term
-											                           AND rt.section = p.section
-																		  JOIN Ref_RoomTransferReason rtr
-																			ON rt.transferCode = rtr.transferCode
-											WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
-											  AND rt.term = (SELECT MAX(term)
-															FROM MV_RoomTransfer
-														   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-											  AND (rt.transferCode = 'RT'
-												   OR rt.transferCode = 'PR')
-												AND transferDate >= CURDATE();";
+											   p.roomCode as originalRoom,
+										       rt.venue as newRoom,
+											   CONCAT(f.lastname, ', ', f.firstName) as faculty,
+										       CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS time,
+										       DATE_FORMAT(rt.transferDate, '%M %e %Y %a') as transferDate,
+										       rt.courseCode,
+										       rt.section,
+										       rtr.transferDescription
+										  FROM MV_RoomTransfer rt JOIN Faculty f
+																	ON rt.facultyID = f.facultyID
+																  JOIN Plantilla p
+																	ON rt.courseCode = p.courseCode
+																   AND rt.facultyID = p.facultyID
+										                           AND rt.dayID = p.dayID
+																   AND rt.schoolYear = p.schoolYear
+										                           AND rt.term = p.term
+										                           AND rt.section = p.section
+																  JOIN Ref_RoomTransferReason rtr
+																	ON rt.transferCode = rtr.transferCode
+										WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
+										  AND rt.term = (SELECT MAX(term)
+														FROM MV_RoomTransfer
+													   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+										  AND (rt.transferCode = 'RT'
+											   OR rt.transferCode = 'PR')
+											AND transferDate >= CURDATE();";
 									$result = $dbc->query($query);
 
 									foreach($result as $row){
@@ -338,34 +339,36 @@
 								</tr>
 							</thead>
 							<?php
-								$query = "SELECT p.roomCode,
-														     CONCAT(f.lastname, ', ', f.firstName) as faculty,
-													       CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS time,
-																 DATE_FORMAT(rt.transferDate, '%M %e %Y %a') as transferDate,
-															   DATE_FORMAT(rt.originalDate, '%M %e %Y %a') as originalDate,
-													       rt.courseCode,
-																 rt.section,
-													       CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS altTime,
-													       rt.venue,
-																 rtr.transferDescription
-													  FROM MV_RoomTransfer rt JOIN Faculty f
-																				ON rt.facultyID = f.facultyID
-																			  JOIN Plantilla p
-																				ON rt.courseCode = p.courseCode
-																			   AND rt.facultyID = p.facultyID
-													                           AND rt.dayID = p.dayID
-																			   AND rt.schoolYear = p.schoolYear
-													                           AND rt.term = p.term
-													                           AND rt.section = p.section
-																				JOIN Ref_RoomTransferReason rtr
-                            							ON rt.transferCode = rtr.transferCode
-													WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
-													  AND rt.term = (SELECT MAX(term)
-																	FROM MV_RoomTransfer
-																   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-													  AND (rt.transferCode = 'FT'
-														   OR rt.transferCode = 'AC')
-														AND transferDate >= CURDATE();";
+								$query = "SELECT 
+								               p.roomCode,
+											   CONCAT(f.lastname, ', ', f.firstName) as faculty,
+										       CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS time,
+											   DATE_FORMAT(rt.transferDate, '%M %e %Y %a') as transferDate,
+											   DATE_FORMAT(rt.originalDate, '%M %e %Y %a') as originalDate,
+										       rt.courseCode,
+											   rt.section,
+										       CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS altTime,
+										       rt.venue,
+											   rtr.transferDescription
+										  FROM MV_RoomTransfer rt JOIN Faculty f
+																	ON rt.facultyID = f.facultyID
+																  JOIN Plantilla p
+																	ON rt.courseCode = p.courseCode
+																   AND rt.facultyID = p.facultyID
+										                           AND rt.dayID = p.dayID
+																   AND rt.schoolYear = p.schoolYear
+										                           AND rt.term = p.term
+										                           AND rt.section = p.section
+																  JOIN Ref_RoomTransferReason rtr
+                													ON rt.transferCode = rtr.transferCode
+										WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
+										  AND rt.term = (SELECT MAX(term)
+														FROM MV_RoomTransfer
+													   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+										  AND (rt.transferCode = 'FT'
+											   OR rt.transferCode = 'AC')
+											AND transferDate >= CURDATE();";
+
 								$result = $dbc->query($query);
 							?>
 							<tbody>
@@ -434,32 +437,32 @@
 
 								<?php
 									$query = "SELECT
-														   p.roomCode as originalRoom,
-														   rt.venue as newRoom,
-														   CONCAT(f.lastname, ', ', f.firstName) as faculty,
-														   CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS originalTime,
-														   CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS newTime,
-															 DATE_FORMAT(rt.transferDate, '%M %e %Y %a') as effectiveDate,
-														   rt.courseCode,
-														   rt.section,
-														   rtr.transferDescription
-														  FROM MV_RoomTransfer rt JOIN Faculty f
-																					ON rt.facultyID = f.facultyID
-																				  JOIN Plantilla p
-																					ON rt.courseCode = p.courseCode
-																				   AND rt.facultyID = p.facultyID
-														                           AND rt.dayID = p.dayID
-																				   AND rt.schoolYear = p.schoolYear
-														                           AND rt.term = p.term
-														                           AND rt.section = p.section
-																					  JOIN Ref_RoomTransferReason rtr
-																						ON rt.transferCode = rtr.transferCode
-														WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
-														  AND rt.term = (SELECT MAX(term)
-																		FROM MV_RoomTransfer
-																	   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-														  AND rt.transferCode = 'CT'
-															AND transferDate >= CURDATE();";
+												   p.roomCode as originalRoom,
+												   rt.venue as newRoom,
+												   CONCAT(f.lastname, ', ', f.firstName) as faculty,
+												   CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS originalTime,
+												   CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS newTime,
+												   DATE_FORMAT(rt.transferDate, '%M %e %Y %a') as effectiveDate,
+												   rt.courseCode,
+												   rt.section,
+												   rtr.transferDescription
+											  FROM MV_RoomTransfer rt JOIN Faculty f
+																		ON rt.facultyID = f.facultyID
+																	  JOIN Plantilla p
+																		ON rt.courseCode = p.courseCode
+																	   AND rt.facultyID = p.facultyID
+											                           AND rt.dayID = p.dayID
+																	   AND rt.schoolYear = p.schoolYear
+											                           AND rt.term = p.term
+											                           AND rt.section = p.section
+																	  JOIN Ref_RoomTransferReason rtr
+																		ON rt.transferCode = rtr.transferCode
+											WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
+											  AND rt.term = (SELECT MAX(term)
+															FROM MV_RoomTransfer
+														   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+											  AND rt.transferCode = 'CT'
+												AND transferDate >= CURDATE();";
 									$result = $dbc->query($query);
 								?>
 								<tbody>
@@ -530,27 +533,27 @@
 
 								<?php
 									$query = "SELECT p.roomCode as room,
-															   CONCAT(of.lastName, ', ', of.firstName) as originalFaculty,
-															   CONCAT(nf.lastName, ', ', nf.firstName) as substituteFaculty,
-															   CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) as classTime,
-															   DATE_FORMAT(s.anticipatedDate, '%M %e %Y %a') as classDate,
-															   s.courseCode,
-															   s.section
-															FROM MV_Substitution s JOIN Faculty of
-																					 ON s.facultyID = of.facultyID
-																				   JOIN Faculty nf
-																					 ON s.substituteFacultyID = nf.facultyID
-																				   JOIN Plantilla p
-																					 ON s.courseCode = p.courseCode
-																					AND s.facultyID = p.facultyID
-																					AND s.dayID = p.dayID
-																					AND s.schoolYear = p.schoolYear
-																					AND s.term = p.term
-																					AND s.section = p.section
-														WHERE s.schoolYear = YEAR(CURRENT_TIMESTAMP)
-														  AND s.term = (SELECT MAX(term)
-																		FROM MV_Substitution
-																	   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+												   CONCAT(of.lastName, ', ', of.firstName) as originalFaculty,
+												   CONCAT(nf.lastName, ', ', nf.firstName) as substituteFaculty,
+												   CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) as classTime,
+												   DATE_FORMAT(s.anticipatedDate, '%M %e %Y %a') as classDate,
+												   s.courseCode,
+												   s.section
+												FROM MV_Substitution s JOIN Faculty of
+																		 ON s.facultyID = of.facultyID
+																	   JOIN Faculty nf
+																		 ON s.substituteFacultyID = nf.facultyID
+																	   JOIN Plantilla p
+																		 ON s.courseCode = p.courseCode
+																		AND s.facultyID = p.facultyID
+																		AND s.dayID = p.dayID
+																		AND s.schoolYear = p.schoolYear
+																		AND s.term = p.term
+																		AND s.section = p.section
+											WHERE s.schoolYear = YEAR(CURRENT_TIMESTAMP)
+											  AND s.term = (SELECT MAX(term)
+															FROM MV_Substitution
+														   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
 															AND anticipatedDate >= CURDATE();";
 									$result = $dbc->query($query);
 								?>
@@ -655,11 +658,8 @@
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/lumino.glyphs.js"></script>
 
-
-	 <script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+	<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 	<script>
-
-
 		!function ($) {
 		    $(document).on("click","ul.nav li.parent > a > span.icon", function(){
 		        $(this).find('em:first').toggleClass("glyphicon-minus");

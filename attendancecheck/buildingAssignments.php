@@ -201,9 +201,10 @@ if(isset($_SESSION['adminemail'])){
 
 							//now to remove the classes that are transfered
 							foreach($result as $row){
-								foreach($buildings[$row['buidling']][[$row['shift']] as $index => $class){
+
+								foreach($buildings[$row['building']][$row['shift']] as $index => $class){
 									if($row['courseCode'] == $class[1] AND $row['section'] == $class[2] AND $row['startTime'] == $class['startTime'] AND $row['endTime'] == $class['endTime']){
-										unset($buildings[$row['buidling']][[$row['shift']][$index]);
+										unset($buildings[$row['building']][$row['shift']][$index]);
 									}
 								}
 							}

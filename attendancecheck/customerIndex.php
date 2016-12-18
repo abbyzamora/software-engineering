@@ -230,14 +230,15 @@ $accountNo = $row['accountNo'];
 																  JOIN Ref_RoomTransferReason rtr
 																	ON rt.transferCode = rtr.transferCode
 																  JOIN Room r
-																    ON p.roomCode = r.roomCode
+                                                                    ON p.roomCode = r.roomCode
 																  JOIN Ref_Building b
                                                                     ON r.buildingCode = b.buildingCode
 																  JOIN (SELECT *
-                                                                          FROM Assigned_Building
-																		 WHERE accountNo = $accountNo) ab
-																  JOIN Ref_Shift s
-                                                                    ON ab.shiftCode = s.shiftCode
+																	      From Assigned_Building
+																	    WHERE accountNo = $accountNo) ab
+																    ON b.buildingCode = ab.buildingCode
+																 JOIN REf_Shift sh
+                                                                   ON ab.shiftCode = sh.shiftCode
 										WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
 										  AND rt.term = (SELECT MAX(term)
 														FROM MV_RoomTransfer
@@ -245,7 +246,7 @@ $accountNo = $row['accountNo'];
 										  AND (rt.transferCode = 'RT'
 											   OR rt.transferCode = 'PR')
 										  AND transferDate >= CURDATE()
-                                          AND rt.startTime BETWEEN s.shiftStart AND s.shiftEnd;";
+                                          AND rt.startTime BETWEEN sh.shiftStart AND sh.shiftEnd;";
 
 									$result = $dbc->query($query);
 
@@ -341,6 +342,7 @@ $accountNo = $row['accountNo'];
 																  JOIN (SELECT *
                                                                           FROM Assigned_Building
 																		 WHERE accountNo = $accountNo) ab
+																    ON b.buildingCode = ab.buildingCode
 																  JOIN Ref_Shift s
                                                                     ON ab.shiftCode = s.shiftCode
 										WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
@@ -447,6 +449,7 @@ $accountNo = $row['accountNo'];
 																      JOIN (SELECT *
                                                                               FROM Assigned_Building
 																	   	     WHERE accountNo = $accountNo) ab
+																	   	ON b.buildingCode = ab.buildingCode
 																      JOIN Ref_Shift s
                                                                         ON ab.shiftCode = s.shiftCode
 											WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
@@ -550,6 +553,7 @@ $accountNo = $row['accountNo'];
 																       JOIN (SELECT *
                                                                                FROM Assigned_Building
 																	   	      WHERE accountNo = $accountNo) ab
+																	   	 ON b.buildingCode = ab.buildingCode
 																       JOIN Ref_Shift sh
                                                                          ON ab.shiftCode = sh.shiftCode
 											WHERE s.schoolYear = YEAR(CURRENT_TIMESTAMP)

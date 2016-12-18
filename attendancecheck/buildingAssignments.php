@@ -260,7 +260,7 @@ if(isset($_SESSION['adminemail'])){
 
 							//add make-up classes for today
 							$query = "SELECT
-													  b.buildingName as building,
+													  b.buildingName,
 												    fmu.roomCode,
 												    fmu.courseCode,
 												    fmu.section,
@@ -286,7 +286,7 @@ if(isset($_SESSION['adminemail'])){
 												                             ON r.buildingCode = b.buildingCode
 																		   JOIN (SELECT *
 												                                    FROM Assigned_Building
-																				  WHERE accountNo = $accountNo) ab
+																				  WHERE accountNo = 2) ab
 																			 ON b.buildingCode = ab.buildingCode
 																		   JOIN REF_Shift s
 												                             ON ab.shiftCode = s.shiftCode
@@ -296,7 +296,8 @@ if(isset($_SESSION['adminemail'])){
 												  AND term = (SELECT MAX(term)
 												                FROM MV_FacultyMakeUp
 															   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-												  AND (fmu.absentDate = CURDATE() OR fmu.makeUpDate = CURDATE());";
+												  AND (fmu.absentDate = CURDATE() OR fmu.makeUpDate = CURDATE())
+												  AND fmu.makeUpStartTime BETWEEN s.shiftStart AND s.shiftEnd;";
 
 							$result = $dbc->query($query);
 

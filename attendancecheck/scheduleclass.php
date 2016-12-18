@@ -969,9 +969,9 @@
                                     if ($_SESSION['makeupdate'] == "{$row5['makeupdate']}" && $mustarttime >= "{$row5['makeupstarttime']}"
                                         && $muendtime <= "{$row5['makeupendtime']}" && $_SESSION['room'] == "{$row5['makeuproom']}"){
                                         $valid3 = 1;
-                                    } else if ($_SESSION['makeupdate'] == "{$row5['makeupdate']}" && $mustarttime >= "{$row5['makeupstarttime']}"
+                                    } else if ($_SESSION['makeupdate'] == "{$row5['makeupdate']}" && ($mustarttime >= "{$row5['makeupstarttime']}"
                                         && $mustarttime <= "{$row5['makeupendtime']}" || $muendtime >= "{$row5['makeupstarttime']}" &&
-                                        $muendtime <= "{$row5['makeupendtime']}" ){
+                                        $muendtime <= "{$row5['makeupendtime']}") ){
 
                                         if ($_SESSION['room'] == "{$row5['makeuproom']}"){
                                              $valid3 = 1;

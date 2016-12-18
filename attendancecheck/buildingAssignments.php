@@ -211,28 +211,28 @@ if(isset($_SESSION['adminemail'])){
 
 							// remove make up classes
 							$result = $dbc->query("SELECT
-																				  fmu.courseCode,
-																			    fmu.section,
-																			    p.startTime,
-																			    p.endTime,
-																			    b.buildingName
-																			FROM MV_FacultyMakeUp fmu JOIN Plantilla p
-																										ON fmu.courseCode = p.courseCode
-																									   AND fmu.facultyID = p.facultyID
-																			                           AND fmu.dayID = p.dayID
-																			                           AND fmu.schoolYear = p.schoolYear
-																			                           AND fmu.term = p.term
-																			                           AND fmu.section = p.section
-																			                           JOIN Room r
-																			                           ON p.roomCode = r.roomCode
-																			                           JOIN Ref_Building b
-																			                            ON r.buildingCode = b.buildingCode
-																			WHERE fmu.schoolYear = YEAR(CURRENT_TIMESTAMP)
-																			AND fmu.term = (SELECT MAX(term)
-																						FROM MV_FacultyMakeUp
-																					  WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-																			AND fmu.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
-																			AND fmu.makeUpDate = CURDATE()");
+														fmu.courseCode,
+													    fmu.section,
+													    p.startTime,
+													    p.endTime,
+													    b.buildingName
+													FROM MV_FacultyMakeUp fmu JOIN Plantilla p
+																				ON fmu.courseCode = p.courseCode
+																			   AND fmu.facultyID = p.facultyID
+													                           AND fmu.dayID = p.dayID
+													                           AND fmu.schoolYear = p.schoolYear
+													                           AND fmu.term = p.term
+													                           AND fmu.section = p.section
+													                           JOIN Room r
+													                           ON p.roomCode = r.roomCode
+													                           JOIN Ref_Building b
+													                            ON r.buildingCode = b.buildingCode
+													WHERE fmu.schoolYear = YEAR(CURRENT_TIMESTAMP)
+													AND fmu.term = (SELECT MAX(term)
+																FROM MV_FacultyMakeUp
+															  WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+													AND fmu.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
+													AND fmu.makeUpDate = CURDATE()");
 
 							foreach($result as $row){
 								foreach($buildings[$row['buildingName']] as $building => $shifts){
@@ -373,10 +373,10 @@ if(isset($_SESSION['adminemail'])){
 							foreach($result as $row){
 								foreach($buildings[$row['building']][$row['shift']] as $index => $class){
 									if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
-										unset($buildings[$building][$shift][$index]);
+										unset($buildings[$row['building']][$row['shift']][$index]);
 									}
 								}
-								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['makeUpStartTime'], 'endTime' => $row['makeUpEndTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
+								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
 							}
 
 							$currentDate = date('F d, Y');

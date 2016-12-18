@@ -378,37 +378,37 @@
 											echo "<td>{$row['transferDate']}</td>";
 											echo "<td>{$row['originalDate']}</td>";
 											echo "<td>
-															<button class=\"btn btn-primary btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
-																Details
-															</button>
+													<button class=\"btn btn-primary btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
+														Details
+													</button>
 
-															<!-- Modal -->
-															<div class=\"modal fade\" id=\"myModal$count\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
-																<div class=\"modal-dialog\">
-																	<div class=\"modal-content\">
-																		<div class=\"modal-header\">
-																			<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
-																			<h4 class=\"modal-title\" id=\"myModalLabel\">Alternative Class</h4>
-																		</div>
-																		<div class=\"modal-body\">
-																			<ul class=\"list-group\" style=\"text-align:left;\">
-																				<li class=\"list-group-item\"><b>Subject:</b> {$row['courseCode']}</li>
-																				<li class=\"list-group-item\"><b>Section:</b> {$row['section']}</li>
-																				<li class=\"list-group-item\"><b>Original Class Schedule:</b>&nbsp;{$row['originalDate']}</li>
-																				<li class=\"list-group-item\"><b>Alternative Class Schedule:</b>&nbsp;{$row['transferDate']} </li>
-																				<li class=\"list-group-item\"><b>Venue:</b> {$row['venue']}</li>
-																				<li class=\"list-group-item\"><b>Reason:</b> {$row['transferDescription']}</li>
-																			</ul>
-																		<div class=\"modal-footer\">
-																			<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
-																		</div>
-																	</div>
-																	<!-- /.modal-content -->
+													<!-- Modal -->
+													<div class=\"modal fade\" id=\"myModal$count\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
+														<div class=\"modal-dialog\">
+															<div class=\"modal-content\">
+																<div class=\"modal-header\">
+																	<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
+																	<h4 class=\"modal-title\" id=\"myModalLabel\">Alternative Class</h4>
 																</div>
-																<!-- /.modal-dialog -->
+																<div class=\"modal-body\">
+																	<ul class=\"list-group\" style=\"text-align:left;\">
+																		<li class=\"list-group-item\"><b>Subject:</b> {$row['courseCode']}</li>
+																		<li class=\"list-group-item\"><b>Section:</b> {$row['section']}</li>
+																		<li class=\"list-group-item\"><b>Original Class Schedule:</b>&nbsp;{$row['originalDate']}</li>
+																		<li class=\"list-group-item\"><b>Alternative Class Schedule:</b>&nbsp;{$row['transferDate']} </li>
+																		<li class=\"list-group-item\"><b>Venue:</b> {$row['venue']}</li>
+																		<li class=\"list-group-item\"><b>Reason:</b> {$row['transferDescription']}</li>
+																	</ul>
+																<div class=\"modal-footer\">
+																	<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
+																</div>
 															</div>
-															<!-- /.modal -->
-														</td>";
+															<!-- /.modal-content -->
+														</div>
+														<!-- /.modal-dialog -->
+													</div>
+													<!-- /.modal -->
+												</td>";
 										echo '</tr>';
 
 										$count++;
@@ -483,7 +483,7 @@
 																		<div class=\"modal-content\">
 																			<div class=\"modal-header\">
 																				<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
-																				<h4 class=\"modal-title\" id=\"myModalLabel\">Alternative Class</h4>
+																				<h4 class=\"modal-title\" id=\"myModalLabel\">Change in time</h4>
 																			</div>
 																			<div class=\"modal-body\">
 																				<ul class=\"list-group\" style=\"text-align:left;\">

@@ -164,6 +164,7 @@ $row=mysqli_fetch_array($printresult,MYSQLI_ASSOC)
 																<div class=\"modal-body\">
 																	<ul class=\"list-group\" style=\"text-align:left;\">
 																	  <li class=\"list-group-item\"><b>Subject:</b> {$row['course']}</li>
+																	  <li class=\"list-group-item\"><b>Section:</b> {$row['section']}</li>
 																	  <li class=\"list-group-item\"><b>Missed Class Schedule:</b>"; echo date('F j Y D', mktime(0, 0, 0, $row['abmonth'], $row['abday'], $row['abyear'] )).' '; echo "{$row['abtime']}</li>
 																	  <li class=\"list-group-item\"><b>Alternative Class Schedule:</b>"; echo date('F j Y D', mktime(0, 0, 0, $row['altmonth'], $row['altday'], $row['altyear'] )).' '; echo "{$row['alttime']}</li>
 																	  <li class=\"list-group-item\"><b>Scheduled Room:</b> {$row['altroom']}</li>

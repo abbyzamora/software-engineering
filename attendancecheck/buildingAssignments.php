@@ -276,7 +276,6 @@ if(isset($_SESSION['adminemail'])){
 								foreach($buildings[$row['building']][$row['shift']] as $index => $class){
 									if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
 										unset($buildings[$building][$shift][$index]);
-										break;
 									}
 								}
 								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'], $row['term']];
@@ -315,6 +314,54 @@ if(isset($_SESSION['adminemail'])){
 							foreach ($result as $row) {
 								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
 
+								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['makeUpStartTime'], 'endTime' => $row['makeUpEndTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
+							}
+
+/* remmovniga nd adding of Substitute*/
+							$query = "SELECT b.buildingName as building,
+														   p.roomCode,
+														   s.courseCode,
+														   s.section,
+														   p.startTime,
+														   p.endTime,
+														   CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS time,
+														   s.dayID,
+														   CONCAT(trim(f.firstName), ', ', trim(f.lastName)) as faculty,
+														   s.term,
+															 ab.shiftCode as shift
+													  FROM MV_Substitution s JOIN Plantilla p
+																			   ON s.courseCode = p.courseCode
+																			  AND s.facultyID = p.facultyID
+																			  AND s.dayID = p.dayID
+																			  AND s.schoolYear = p.schoolYear
+																			  AND s.term = p.term
+																			  AND s.section = p.section
+																			 JOIN Room r
+																			   ON r.roomCode = p.roomCode
+																			 JOIN Ref_Building b
+																			   ON r.buildingCode = b.buildingCode
+																			 JOIN (SELECT *
+																					 FROM Assigned_Building
+																					WHERE accountNo = $accountNo) ab
+																			   ON ab.buildingCode = b.buildingCode
+																			 JOIN REF_Shift sf
+																			   ON ab.shiftCode = sf.shiftCode
+																			 JOIN Faculty f
+																			   ON s.substituteFacultyID = f.facultyID
+													 WHERE s.anticipatedDate = CURDATE()
+													   AND s.term = (SELECT MAX(term)
+																	   FROM MV_Substitution
+																	  WHERE YEAR(anticipatedDate) = YEAR(CURRENT_TIMESTAMP))
+													  AND p.startTime BETWEEN sf.shiftStart AND sf.shiftEnd;";
+
+							$result = $dbc->query($query);
+
+							foreach($result as $row){
+								foreach($buildings[$row['building']][$row['shift']] as $index => $class){
+									if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
+										unset($buildings[$building][$shift][$index]);
+									}
+								}
 								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['makeUpStartTime'], 'endTime' => $row['makeUpEndTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
 							}
 

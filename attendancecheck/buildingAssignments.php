@@ -179,11 +179,12 @@ if(isset($_SESSION['adminemail'])){
 										foreach($classes as $index => $class){
 												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
 													unset($buildings[$building][$shift][$index]);
-
+													goto end1;
 												}
 										}
 									}
 								}
+								end1:
 							}
 
 							// remove make up classes
@@ -202,11 +203,12 @@ if(isset($_SESSION['adminemail'])){
 										foreach($classes as $index => $class){
 												if($class[2] == $row['section'] AND $class[1] == $row['courseCode']){
 													unset($buildings[$building][$shift][$index]);
-
+													goto end2;
 												}
 										}
 									}
 								}
+								end2:
 							}
 
 /* ADDITION SECTION */
@@ -249,10 +251,11 @@ if(isset($_SESSION['adminemail'])){
 										foreach($classes as $index => $class){
 												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
 													unset($buildings[$building][$shift][$index]);
-													
+													goto end3;
 												}
 										}
 									}
+									end3:
 								}
 								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
 							}

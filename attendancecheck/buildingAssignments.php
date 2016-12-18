@@ -293,7 +293,7 @@ if(isset($_SESSION['adminemail'])){
 																		   JOIN Faculty f
 												                              ON f.facultyID = fmu.facultyID
 												WHERE fmu.schoolYear = YEAR(CURRENT_TIMESTAMP)
-												  AND term = (SELECT MAX(term)
+												  AND fmu.term = (SELECT MAX(term)
 												                FROM MV_FacultyMakeUp
 															   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
 												  AND (fmu.absentDate = CURDATE() OR fmu.makeUpDate = CURDATE())

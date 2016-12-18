@@ -119,7 +119,7 @@ if(isset($_SESSION['adminemail'])){
 					<div class="panel-body">
 						<?php
 							//retrieve assigned rooms
-							$query = "SELECT B.buildingName, P.roomCode,  P.courseCode, P.section, S.shiftCode as shift ,CONCAT(DATE_FORMAT(startTime, '%H:%i'), ' - ', DATE_FORMAT(endTime, '%H:%i')) AS time, startTime, endTime, P.dayID, CONCAT(f.firstName, ' ', f.lastName) as faculty,P.term as term
+							$query = "SELECT B.buildingName, P.roomCode,  P.courseCode, P.section, S.shiftCode as shift ,CONCAT(DATE_FORMAT(startTime, '%H:%i'), ' - ', DATE_FORMAT(endTime, '%H:%i')) AS time, startTime, endTime, P.dayID, CONCAT(f.firstName, ' ', f.lastName) as faculty, P.term as term
 													FROM Accounts A JOIN Assigned_Building AB
 																						ON A.ACCOUNTNO = AB.ACCOUNTNO
 																				  JOIN REF_Shift S
@@ -162,41 +162,48 @@ if(isset($_SESSION['adminemail'])){
 							//remove from plantilla rooms that are transfered
 
 							//get classes that are transfered on the day fo transfer
-							$query = "SELECT rt.courseCode,
-														   rt.section,
-													       p.startTime as originalStartTime,
-													       p.endTime as originalEndTime,
-													       rt.startTime as alternativeStartTime,
-													       rt.endTime as alternativeEndTime,
-													       b.buildingName as building
-													  FROM MV_RoomTransfer rt JOIN  Plantilla p
-																				ON rt.courseCode = p.courseCode
-																			   AND rt.facultyID = p.facultyID
-													                           AND rt.dayID = p.dayID
-													                           AND rt.schoolYear = p.schoolYear
-													                           AND rt.term = p.term
-													                           AND rt.section = p.section
-																			  JOIN Room r
-													                            ON p.roomCode
-																			  JOIN Ref_Building b
-																				ON r.buildingCode = b.buildingCode
-													 WHERE (transferDate = CURDATE()
-														   OR originalDate = CURDATE())
-													   AND rt.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
-													   AND rt.term = (SELECT MAX(term)
-																	    FROM Assigned_Building
-																	   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP));";
+							$query = "SELECT
+													  b.buildingName as building,
+												    rt.venue as room,
+													  rt.courseCode,
+												    rt.section,
+												    s.shiftCode as shift,
+												    p.startTime,
+												    p.endTime,
+												    rt.dayID,
+												    rt.term
+												  FROM MV_RoomTransfer rt JOIN Plantilla p
+																			ON rt.courseCode = p.courseCode
+																		   AND rt.facultyID = p.facultyID
+												                           AND rt.dayID = p.dayID
+												                           AND rt.schoolYear = p.schoolYear
+												                           AND rt.term = p.term
+												                           AND rt.section = p.section
+																		  JOIN Room r
+												                            ON p.roomCode = r.roomCode
+																		  JOIN Ref_Building b
+												                            ON r.buildingCode = b.buildingCode
+																		  JOIN (SELECT *
+																				  FROM Assigned_Building
+																				 WHERE accountNo = $accountNo) ab
+																			ON b.buildingCode = ab.buildingCode
+																		  JOIN REF_Shift s
+												                            ON ab.shiftCode = s.shiftCode
+												WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
+												  AND rt.term = (SELECT MAX(term)
+																	 FROM MV_RoomTransfer
+																  WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+												  AND (rt.originalDate = CURDATE()
+													     OR rt.transferDate = CURDATE())
+												  AND p.startTime BETWEEN s.shiftStart AND s.shiftEnd;";
+
 							$result = $dbc->query($query);
 
 							//now to remove the classes that are transfered
 							foreach($result as $row){
-								foreach($buildings[$row['building']] as $building => $shifts){
-									foreach($shifts as $shift => $classes){
-										foreach($classes as $index => $class){
-											if($row['courseCode'] == $class[1] AND $row['section'] == $class[2] AND (($row['originalStartTime'] == $class['startTime'] AND $row['originalEndTime'] == $class['endTime']) OR ($row['alternativeStartTime'] == $class['startTime'] AND $row['alternativeEndTime'] == $class['endTime']) )){
-												unset($buildings[$building][$shift][$index]);
-											}
-										}
+								foreach($buildings[$row['buidling']][[$row['shift']] as $index => $class){
+									if($row['courseCode'] == $class[1] AND $row['section'] == $class[2] AND $row['startTime'] == $class['startTime'] AND $row['endTime'] == $class['endTime']){
+										unset($buildings[$row['buidling']][[$row['shift']][$index]);
 									}
 								}
 							}
@@ -241,45 +248,51 @@ if(isset($_SESSION['adminemail'])){
 
 /* ADDITION SECTION */
 							//add the transfered classes for today
-							$query = "SELECT ab.shiftCode as shift , b.buildingName as building, rt.courseCode, rt.venue, rt.section,  rt.dayID, rt.startTime, rt.endTime, CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS time, SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1) as day, CONCAT(f.firstName, ' ', f.lastName) as faculty,P.term as term
-												  FROM MV_RoomTransfer rt JOIN Plantilla p
-																			ON rt.courseCode = p.courseCode
-																		   AND rt.facultyID = p.facultyID
-												                           AND rt.dayID = p.dayID
-												                           AND rt.schoolYear = p.schoolYear
-												                           AND rt.term = p.term
-												                           AND rt.section = p.section
-																		  JOIN Faculty f
-																			ON rt.facultyID = f.facultyID
-																		  JOIN Room r
-																			ON p.roomCode = r.roomCode
-																		  JOIN Ref_Building b
-												                            ON r.buildingCode = b.buildingCode
-																		  JOIN Assigned_Building ab
-																			ON ab.buildingCode = b.buildingCode
-																		  JOIN REF_Shift s
-																			ON s.shiftCode = ab.shiftCode
-												 WHERE rt.transferDate = CURDATE()
-												   AND rt.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
-												   AND ab.accountNo = $accountNo
-												   AND ab.schoolYear = YEAR(CURRENT_TIMESTAMP)
-												   AND ab.term = (SELECT MAX(term)
-																	FROM Assigned_Building
-																   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-												   AND rt.startTime BETWEEN s.shiftStart AND s.shiftEnd;";
+							$query = "SELECT
+														  b.buildingName as building,
+													    rt.venue,
+														  rt.courseCode,
+													    rt.section,
+													    s.shiftCode as shift,
+													    rt.startTime,
+													    rt.endTime,
+													    CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS time,
+													    CONCAT(f.firstName, ' ', f.lastName) as faculty,
+													    rt.dayID,
+													    rt.term
+													  FROM MV_RoomTransfer rt JOIN Plantilla p
+																				ON rt.courseCode = p.courseCode
+																			   AND rt.facultyID = p.facultyID
+													                           AND rt.dayID = p.dayID
+													                           AND rt.schoolYear = p.schoolYear
+													                           AND rt.term = p.term
+													                           AND rt.section = p.section
+																			  JOIN Room r
+													                            ON p.roomCode = r.roomCode
+																			  JOIN Ref_Building b
+													                            ON r.buildingCode = b.buildingCode
+																			  JOIN (SELECT *
+																					  FROM Assigned_Building
+																					 WHERE accountNo = 2) ab
+																				ON b.buildingCode = ab.buildingCode
+																			  JOIN REF_Shift s
+													                            ON ab.shiftCode = s.shiftCode
+																			  JOIN Faculty f
+													                            ON rt.facultyID = f.facultyID
+													WHERE rt.schoolYear = YEAR(CURRENT_TIMESTAMP)
+													  AND rt.term = (SELECT MAX(term)
+																		 FROM MV_RoomTransfer
+																	  WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+													  AND rt.transferDate = CURDATE()
+													  AND rt.startTime BETWEEN s.shiftStart AND s.shiftEnd;";
+
 							$result = $dbc->query($query);
 
 
 							foreach ($result as $row) {
 								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
 
-								foreach($buildings[$row['building']][$row['shift']] as $index => $class){
-									if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
-										unset($buildings[$building][$shift][$index]);
-									}
-								}
-								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'], $row['term']];
-
+								$buildings[$row['building']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'], $row['term']];
 							}
 
 							//add make-up classes for today

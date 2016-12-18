@@ -296,7 +296,7 @@ if(isset($_SESSION['adminemail'])){
 												  AND fmu.term = (SELECT MAX(term)
 												                FROM MV_FacultyMakeUp
 															   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-												  AND (fmu.absentDate = CURDATE() OR fmu.makeUpDate = CURDATE())
+												  AND fmu.makeUpDate = CURDATE()
 												  AND fmu.makeUpStartTime BETWEEN s.shiftStart AND s.shiftEnd;";
 
 							$result = $dbc->query($query);

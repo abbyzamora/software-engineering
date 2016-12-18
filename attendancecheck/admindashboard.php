@@ -151,50 +151,44 @@
 						<table data-toggle="table" class="data-table">
 						    <thead>
 							    <tr>
-										<th data-field="room">Room</th>
-						        <th data-field="fname">Faculty</th>
-						        <th data-field="department">Class Time</th>
-						        <th data-field="remarks">Class Date</th>
-										<th data-field="actions">Class Details</th>
+									<th data-field="room">Room</th>
+						        	<th data-field="fname">Faculty</th>
+						        	<th data-field="department">Class Time</th>
+						        	<th data-field="remarks">Class Date</th>
+									<th data-field="actions">Class Details</th>
 							    </tr>
 						    </thead>
-							<tbody>
-								<?php
-									date_default_timezone_set('UTC');
-									$query = "SELECT
-															fmu.coursecode as course,
-															fmu.section as section,
-															MONTH(fmu.absentdate) as abmonth,
-															DAY(fmu.absentdate) as abday,
-													 		YEAR(fmu.absentdate) as abyear,
-															CONCAT(p.starttime,' - ',p.endtime) as abtime,
-													 		CONCAT(trim(f.firstname), ' ', trim(f.lastname)) as facultyname,
-															fmu.makeupdate as altdate,
-															MONTH(fmu.makeupdate) as altmonth,
-                              DAY(fmu.makeupdate) as altday,
-															YEAR(fmu.makeupdate) as altyear,
-															fmu.makeuproom as altroom,
-                              CONCAT(fmu.makeupstarttime,' - ',fmu.makeupendtime) as alttime
-														FROM mv_facultymakeup fmu join faculty f
-																												on fmu.facultyid = f.facultyid
-																		  								join plantilla p
-																		    								on fmu.coursecode = p.coursecode
-											    WHERE fmu.makeupdate >= CURDATE()
-                       group by 1,2";
+							<tbody><?php
+									$query = "SELECT 
+												fmu.roomCode,
+												fmu.courseCode as course,
+											    fmu.section,
+											    DATE_FORMAT(fmu.absentDate, '%M %e %Y %a') as absentDate,
+												CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) as absentTime,
+												CONCAT(TRIM(f.firstName), ', ', TRIM(f.lastName)) as faculty,
+												DATE_FORMAT(fmu.makeUpDate, '%M %e %Y %a') as makeUpDate,
+											    CONCAT(DATE_FORMAT(fmu.makeUpStartTime, '%H:%i'), ' - ', DATE_FORMAT(fmu.makeUpEndTime, '%H:%i')) as makeUpTime
+											  FROM MV_FacultyMakeUp fmu JOIN Plantilla p
+																		  ON fmu.courseCode = p.courseCode
+																		 AND fmu.facultyID = p.facultyID
+											                             AND fmu.dayID = p.dayID
+											                             AND fmu.schoolYear = p.schoolYear
+											                             AND fmu.term = p.term
+											                             AND fmu.section = p.section
+																		JOIN faculty f
+											                              ON fmu.facultyID = f.facultyID
+											WHERE fmu.makeUpDate >= CURDATE();";
 
-									$result = mysqli_query($dbc, $query);
+									$result = $dbc->query($query);
 									$count = 0;
 									if($result){
 
 										while($row = mysqli_fetch_array($result, MYSQLI_ASSOC) ){
 											echo '<tr>';
-											echo "<td>{$row['altroom']}</td>";
-											echo "<td>{$row['facultyname']}</td>";
-											echo "<td>{$row['alttime']}</td>";
-											echo "<td>";
-											echo date('F j Y D', mktime(0, 0, 0, $row['altmonth'], $row['altday'], $row['altyear'] ));
-											echo "</td>";
-
+											echo "<td>{$row['roomCode']}</td>";
+											echo "<td>{$row['faculty']}</td>";
+											echo "<td>{$row['makeUpTime']}</td>";
+											echo "<td>{$row['makeUpDate']}</td>";
 											echo "<td>
 													<button class=\"btn btn-primary btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
 														Details
@@ -210,9 +204,12 @@
 																<div class=\"modal-body\">
 																	<ul class=\"list-group\" style=\"text-align:left;\">
 																	  <li class=\"list-group-item\"><b>Subject:</b> {$row['course']}</li>
-																	  <li class=\"list-group-item\"><b>Missed Class Schedule:</b>"; echo date('F j Y D', mktime(0, 0, 0, $row['abmonth'], $row['abday'], $row['abyear'] )).' '; echo "{$row['abtime']}</li>
-																	  <li class=\"list-group-item\"><b>Alternative Class Schedule:</b>"; echo date('F j Y D', mktime(0, 0, 0, $row['altmonth'], $row['altday'], $row['altyear'] )).' '; echo "{$row['alttime']}</li>
-																	  <li class=\"list-group-item\"><b>Scheduled Room:</b> {$row['altroom']}</li>
+																	  <li class=\"list-group-item\"><b>Section:</b> {$row['section']}</li>
+																	  <li class=\"list-group-item\"><b>Missed Class Date:</b>&nbsp;{$row['absentDate']}</li>
+																	  <li class=\"list-group-item\"><b>Missed Class Time:</b>&nbsp;{$row['absentTime']}</li>
+																	  <li class=\"list-group-item\"><b>Alternative Class Date:</b>&nbsp;{$row['makeUpDate']}</li>
+																	  <li class=\"list-group-item\"><b>Alternative Class Time:</b>&nbsp;{$row['makeUpTime']}</li>
+																	  <li class=\"list-group-item\"><b>Scheduled Room:</b> {$row['roomCode']}</li>
 																	</ul>
 																<div class=\"modal-footer\">
 																	<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
@@ -230,6 +227,7 @@
 									}
 
 								?>
+								
 							</tbody>
 						</table>
 
@@ -246,6 +244,7 @@
 									<th data-field="actions">Class Details</th>
 								</tr>
 							</thead>
+							<tbody>
 							<?php
 								$query = "SELECT
 											   p.roomCode as originalRoom,
@@ -320,8 +319,6 @@
 										$count++;
 									}
 							?>
-							<tbody>
-
 							</tbody>
 						</table>
 
@@ -397,8 +394,10 @@
 																	<ul class=\"list-group\" style=\"text-align:left;\">
 																		<li class=\"list-group-item\"><b>Subject:</b> {$row['courseCode']}</li>
 																		<li class=\"list-group-item\"><b>Section:</b> {$row['section']}</li>
-																		<li class=\"list-group-item\"><b>Original Class Schedule:</b>&nbsp;{$row['originalDate']}</li>
-																		<li class=\"list-group-item\"><b>Alternative Class Schedule:</b>&nbsp;{$row['transferDate']} </li>
+																		<li class=\"list-group-item\"><b>Original Class Date:</b>&nbsp;{$row['originalDate']}</li>
+																		<li class=\"list-group-item\"><b>Original Class Time:</b>&nbsp;{$row['time']}</li>
+																		<li class=\"list-group-item\"><b>Alternative Class Date:</b>&nbsp;{$row['transferDate']} </li>
+																		<li class=\"list-group-item\"><b>Alternative Class Time:</b>&nbsp;{$row['altTime']} </li>
 																		<li class=\"list-group-item\"><b>Venue:</b> {$row['venue']}</li>
 																		<li class=\"list-group-item\"><b>Reason:</b> {$row['transferDescription']}</li>
 																	</ul>

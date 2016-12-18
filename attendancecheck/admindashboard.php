@@ -530,23 +530,23 @@
 
 								<?php
 									$query = "SELECT p.roomCode as room,
-															     CONCAT(of.lastName, ', ', of.firstName) as originalFaculty,
-														       CONCAT(nf.lastName, ', ', nf.firstName) as substituteFaculty,
-														       CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) as classTime,
-															     DATE_FORMAT(s.anticipatedDate, '%M %e %Y %a') as classDate,
-														       s.courseCode,
-														       s.section
+															   CONCAT(of.lastName, ', ', of.firstName) as originalFaculty,
+															   CONCAT(nf.lastName, ', ', nf.firstName) as substituteFaculty,
+															   CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) as classTime,
+															   DATE_FORMAT(s.anticipatedDate, '%M %e %Y %a') as classDate,
+															   s.courseCode,
+															   s.section
 															FROM MV_Substitution s JOIN Faculty of
-																				     ON s.facultyID = of.facultyID
+																					 ON s.facultyID = of.facultyID
 																				   JOIN Faculty nf
-														                             ON s.substituteFacultyID = nf.facultyID
+																					 ON s.substituteFacultyID = nf.facultyID
 																				   JOIN Plantilla p
 																					 ON s.courseCode = p.courseCode
 																					AND s.facultyID = p.facultyID
-														                            AND s.dayID = p.facultyID
-														                            AND s.schoolYear = p.schoolYear
-														                            AND s.term = p.term
-														                            AND s.section = p.section
+																					AND s.dayID = p.dayID
+																					AND s.schoolYear = p.schoolYear
+																					AND s.term = p.term
+																					AND s.section = p.section
 														WHERE s.schoolYear = YEAR(CURRENT_TIMESTAMP)
 														  AND s.term = (SELECT MAX(term)
 																		FROM MV_Substitution

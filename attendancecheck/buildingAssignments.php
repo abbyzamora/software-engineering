@@ -164,12 +164,12 @@ if(isset($_SESSION['adminemail'])){
 							//get classes that are transfered
 							$query = "SELECT *
 												  FROM MV_RoomTransfer
-												 WHERE originalDate = CURDATE()
+												 WHERE (originalDate = CURDATE()
+											 					OR transferDate = CURDATE())
 												   AND dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
 												   AND term = (SELECT MAX(term)
 																	       FROM Assigned_Building
-																        WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-												   AND YEAR(originalDate) = YEAR(CURRENT_TIMESTAMP);";
+																        WHERE schoolYear = YEAR(CURRENT_TIMESTAMP));";
 							$result = $dbc->query($query);
 
 							//now to remove the classes that are transfered
@@ -188,27 +188,41 @@ if(isset($_SESSION['adminemail'])){
 							}
 
 							// remove make up classes
-							$result = $dbc->query("SELECT *
-																		   FROM MV_FacultyMakeUp
-																		WHERE schoolYear = YEAR(CURRENT_TIMESTAMP)
-																		  AND term = (SELECT MAX(term)
+							$result = $dbc->query("SELECT
+																				  fmu.courseCode,
+																			    fmu.section,
+																			    p.startTime,
+																			    p.endTime,
+																			    b.buildingName
+																			FROM MV_FacultyMakeUp fmu JOIN Plantilla p
+																										ON fmu.courseCode = p.courseCode
+																									   AND fmu.facultyID = p.facultyID
+																			                           AND fmu.dayID = p.dayID
+																			                           AND fmu.schoolYear = p.schoolYear
+																			                           AND fmu.term = p.term
+																			                           AND fmu.section = p.section
+																			                           JOIN Room r
+																			                           ON p.roomCode = r.roomCode
+																			                           JOIN Ref_Building b
+																			                            ON r.buildingCode = b.buildingCode
+																			WHERE fmu.schoolYear = YEAR(CURRENT_TIMESTAMP)
+																			AND fmu.term = (SELECT MAX(term)
 																						FROM MV_FacultyMakeUp
 																					  WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-																		  AND dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
-																		  AND makeUpDate = CURDATE();");
+																			AND fmu.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1);
+																			AND fmu.makeUpDate = CURDATE()");
 
 							foreach($result as $row){
-								foreach ($buildings as $building => $shifts) {
-									foreach ($shifts as $shift => $classes) {
+								foreach($buildings[$row['buildingName']] as $building => $shifts){
+									foreach($shifts as $shift => $classes){
 										foreach($classes as $index => $class){
-												if($class[2] == $row['section'] AND $class[1] == $row['courseCode']){
-													unset($buildings[$building][$shift][$index]);
-													goto end2;
-												}
+											if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
+												unset($buildings[$building][$shift][$index]);
+											}
 										}
 									}
 								}
-								end2:
+
 							}
 
 /* ADDITION SECTION */
@@ -245,19 +259,14 @@ if(isset($_SESSION['adminemail'])){
 							foreach ($result as $row) {
 								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
 
-
-								foreach ($buildings as $building => $shifts) {
-									foreach ($shifts as $shift => $classes) {
-										foreach($classes as $index => $class){
-												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
-													unset($buildings[$building][$shift][$index]);
-													goto end3;
-												}
-										}
+								foreach($buildings[$row['building']][$row['shift']] as $index => $class){
+									if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
+										unset($buildings[$building][$shift][$index]);
+										break;
 									}
-									end3:
 								}
-								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
+								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'], $row['term']];
+
 							}
 
 							//add make-up classes for today

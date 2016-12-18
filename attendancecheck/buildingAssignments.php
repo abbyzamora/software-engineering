@@ -223,7 +223,7 @@ if(isset($_SESSION['adminemail'])){
 																			AND fmu.term = (SELECT MAX(term)
 																						FROM MV_FacultyMakeUp
 																					  WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-																			AND fmu.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1);
+																			AND fmu.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
 																			AND fmu.makeUpDate = CURDATE()");
 
 							foreach($result as $row){

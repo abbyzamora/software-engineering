@@ -151,7 +151,7 @@ if(isset($_SESSION['adminemail'])){
 							foreach ($result as $row) {
 								$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
 							}
-							 
+
 							//we now have a list of buildings
 							// with shifts
 							// with rooms with classes @_@
@@ -179,6 +179,7 @@ if(isset($_SESSION['adminemail'])){
 										foreach($classes as $index => $class){
 												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
 													unset($buildings[$building][$shift][$index]);
+													break;
 												}
 										}
 									}
@@ -201,6 +202,7 @@ if(isset($_SESSION['adminemail'])){
 										foreach($classes as $index => $class){
 												if($class[2] == $row['section'] AND $class[1] == $row['courseCode']){
 													unset($buildings[$building][$shift][$index]);
+													break;
 												}
 										}
 									}
@@ -247,6 +249,7 @@ if(isset($_SESSION['adminemail'])){
 										foreach($classes as $index => $class){
 												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
 													unset($buildings[$building][$shift][$index]);
+													break;
 												}
 										}
 									}
@@ -282,10 +285,10 @@ if(isset($_SESSION['adminemail'])){
 											  AND mu.makeUpStartTime BETWEEN s.shiftStart AND s.shiftEnd
 											  AND ab.accountNo = $accountNo;";
 							$result = $dbc->query($query);
-							 
+
 							foreach ($result as $row) {
 								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
-							 
+
 								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['makeUpStartTime'], 'endTime' => $row['makeUpEndTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
 							}
 
@@ -303,7 +306,7 @@ if(isset($_SESSION['adminemail'])){
 								<?php
 									$count = 0;
 									$modals = '';
-						 
+
 				          foreach ($buildings as $building => $shifts) {
 				            foreach ($shifts as $shift => $classes) {
 				              echo '<tr>';

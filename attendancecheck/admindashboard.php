@@ -271,7 +271,8 @@
 															FROM MV_RoomTransfer
 														   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
 											  AND (rt.transferCode = 'RT'
-												   OR rt.transferCode = 'PR');";
+												   OR rt.transferCode = 'PR')
+												AND transferDate >= CURDATE();";
 									$result = $dbc->query($query);
 
 									foreach($result as $row){
@@ -321,7 +322,7 @@
 							<tbody>
 
 							</tbody>
-						<table>
+						</table>
 
 						<div class="panel-heading"><u>Alternative Class List</u></div>
 
@@ -363,7 +364,8 @@
 																	FROM MV_RoomTransfer
 																   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
 													  AND (rt.transferCode = 'FT'
-														   OR rt.transferCode = 'AC');";
+														   OR rt.transferCode = 'AC')
+														AND transferDate >= CURDATE();";
 								$result = $dbc->query($query);
 							?>
 							<tbody>
@@ -414,7 +416,7 @@
 								?>
 							</tbody>
 
-						<table>
+						</table>
 
 							<div class="panel-heading"><u>Change in time List</u></div>
 
@@ -456,7 +458,8 @@
 														  AND rt.term = (SELECT MAX(term)
 																		FROM MV_RoomTransfer
 																	   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-														  AND rt.transferCode = 'CT';";
+														  AND rt.transferCode = 'CT'
+															AND transferDate >= CURDATE();";
 									$result = $dbc->query($query);
 								?>
 								<tbody>
@@ -509,7 +512,97 @@
 									?>
 								</tbody>
 
-							<table>
+							</table>
+
+							<div class="panel-heading"><u>Substitutions List</u></div>
+
+							<table data-toggle="table" class="data-table">
+								<thead>
+									<tr>
+										<th data-field="room">Room</th>
+										<th data-field="fname">Original Faculty</th>
+										<th data-field="fname">Substitute Faculty</th>
+										<th data-field="cllassTime">Class Time</th>
+										<th data-field="transferDate">Anticipated Date</th>
+										<th data-field="actions">Class Details</th>
+									</tr>
+								</thead>
+
+								<?php
+									$query = "SELECT p.roomCode as room,
+															     CONCAT(of.lastName, ', ', of.firstName) as originalFaculty,
+														       CONCAT(nf.lastName, ', ', nf.firstName) as substituteFaculty,
+														       CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) as classTime,
+															     DATE_FORMAT(s.anticipatedDate, '%M %e %Y %a') as classDate,
+														       s.courseCode,
+														       s.section
+															FROM MV_Substitution s JOIN Faculty of
+																				     ON s.facultyID = of.facultyID
+																				   JOIN Faculty nf
+														                             ON s.substituteFacultyID = nf.facultyID
+																				   JOIN Plantilla p
+																					 ON s.courseCode = p.courseCode
+																					AND s.facultyID = p.facultyID
+														                            AND s.dayID = p.facultyID
+														                            AND s.schoolYear = p.schoolYear
+														                            AND s.term = p.term
+														                            AND s.section = p.section
+														WHERE s.schoolYear = YEAR(CURRENT_TIMESTAMP)
+														  AND s.term = (SELECT MAX(term)
+																		FROM MV_Substitution
+																	   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+															AND anticipatedDate >= CURDATE();";
+									$result = $dbc->query($query);
+								?>
+
+								<tbody>
+									<?php
+										foreach($result as $row){
+											echo '<tr>';
+												echo "<td>{$row['room']}</td>";
+												echo "<td>{$row['originalFaculty']}</td>";
+
+												echo "<td>{$row['substituteFaculty']}</td>";
+												echo "<td>{$row['classTime']}</td>";
+												echo "<td>{$row['classDate']}</td>";
+												echo "<td>
+																<button class=\"btn btn-primary btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
+																	Details
+																</button>
+
+																<!-- Modal -->
+																<div class=\"modal fade\" id=\"myModal$count\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
+																	<div class=\"modal-dialog\">
+																		<div class=\"modal-content\">
+																			<div class=\"modal-header\">
+																				<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
+																				<h4 class=\"modal-title\" id=\"myModalLabel\">Alternative Class</h4>
+																			</div>
+																			<div class=\"modal-body\">
+																				<ul class=\"list-group\" style=\"text-align:left;\">
+																					<li class=\"list-group-item\"><b>Subject:</b> {$row['courseCode']}</li>
+																					<li class=\"list-group-item\"><b>Section:</b> {$row['section']}</li>
+																					<li class=\"list-group-item\"><b>Original Faculty:</b> {$row['originalFaculty']}</li>
+																					<li class=\"list-group-item\"><b>Substitute Faculty:</b>&nbsp;{$row['substituteFaculty']}</li>
+																					<li class=\"list-group-item\"><b>Class Room:</b>&nbsp;{$row['room']} </li>
+																					<li class=\"list-group-item\"><b>Class Time:</b> {$row['classTime']}</li>
+																					<li class=\"list-group-item\"><b>Class Date:</b> {$row['classDate']}</li>
+																				</ul>
+																			<div class=\"modal-footer\">
+																				<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
+																			</div>
+																		</div>
+																		<!-- /.modal-content -->
+																	</div>
+																	<!-- /.modal-dialog -->
+																</div>
+																<!-- /.modal -->
+															</td>";
+											echo '</tr>';
+										}
+									?>
+								</tbody>
+							</table>
 				</div><!-- panel-body -->
 			</div><!-- panel -->
 		</div><!--/.col-md-12-->

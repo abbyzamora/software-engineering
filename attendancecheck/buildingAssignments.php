@@ -161,31 +161,44 @@ if(isset($_SESSION['adminemail'])){
 /* SUBTRATION/REMOVAL SECTION */
 							//remove from plantilla rooms that are transfered
 
-							//get classes that are transfered
-							$query = "SELECT *
-												  FROM MV_RoomTransfer
-												 WHERE (originalDate = CURDATE()
-											 					OR transferDate = CURDATE())
-												   AND dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
-												   AND term = (SELECT MAX(term)
-																	       FROM Assigned_Building
-																        WHERE schoolYear = YEAR(CURRENT_TIMESTAMP));";
+							//get classes that are transfered on the day fo transfer
+							$query = "SELECT rt.courseCode,
+														   rt.section,
+													       p.startTime as originalStartTime,
+													       p.endTime as originalEndTime,
+													       rt.startTime as alternativeStartTime,
+													       rt.endTime as alternativeEndTime,
+													       b.buildingName as building
+													  FROM MV_RoomTransfer rt JOIN  Plantilla p
+																				ON rt.courseCode = p.courseCode
+																			   AND rt.facultyID = p.facultyID
+													                           AND rt.dayID = p.dayID
+													                           AND rt.schoolYear = p.schoolYear
+													                           AND rt.term = p.term
+													                           AND rt.section = p.section
+																			  JOIN Room r
+													                            ON p.roomCode
+																			  JOIN Ref_Building b
+																				ON r.buildingCode = b.buildingCode
+													 WHERE (transferDate = CURDATE()
+														   OR originalDate = CURDATE())
+													   AND rt.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
+													   AND rt.term = (SELECT MAX(term)
+																	    FROM Assigned_Building
+																	   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP));";
 							$result = $dbc->query($query);
 
 							//now to remove the classes that are transfered
 							foreach($result as $row){
-								foreach ($buildings as $building => $shifts) {
-									foreach ($shifts as $shift => $classes) {
+								foreach($buildings[$row['building']] as $building => $shifts){
+									foreach($shifts as $shift => $classes){
 										foreach($classes as $index => $class){
-												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
-													unset($buildings[$building][$shift][$index]);
-													goto end1;
-												}
+											if($row['courseCode'] == $class[1] AND $row['section'] == $class[2] AND (($row['originalStartTime'] == $class['startTime'] AND $row['originalEndTime'] == $class['endTime']) OR ($row['alternativeStartTime'] == $class['startTime'] AND $row['alternativeEndTime'] == $class['endTime']) )){
+												unset($buildings[$building][$shift][$index]);
+											}
 										}
 									}
 								}
-								end1:
-							}
 
 							// remove make up classes
 							$result = $dbc->query("SELECT

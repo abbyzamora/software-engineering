@@ -36,7 +36,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="admindashboard.php"><span>Attendance Tracker</span></a>
+                    <a class="navbar-brand" href="admindashboard.php"><img src="dlsu2.png" height="23px"><span> <b>De La Salle University | Attendance Tracker</b></span></a>
                     <ul class="user-menu">
                         <li class="dropdown pull-right">
 
@@ -177,18 +177,20 @@
                             <a class="" href="newAccount.php">
                                 <svg class="glyph stroked chevron-right">
                                     <use xlink:href="#stroked-chevron-right"></use>
-                                </svg> Create new user account
+                                </svg> Create User Accounts
                             </a>
                         </li>
                         <li>
                             <a class="" href="assign-checker.php">
-                                <svg class="glyph stroked chevron-right"><use xlink:href="#stroked-chevron-right"></use></svg> Assign Checker
+                                <svg class="glyph stroked chevron-right">
+                                    <use xlink:href="#stroked-chevron-right"></use>
+                                </svg> Assign Checker
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li role="presentation" class="divider"></li>
-            
+
                 <li class="parent">
                     <a href="adminhelpdesk.php"><span><svg class="glyph stroked paperclip"><use xlink:href="#stroked-paperclip"/></svg>Help Desk | FAQs</span></a>
                 </li>
@@ -209,22 +211,28 @@
                         </a>
                     </li>
                     <li>Attendance Monitor</li>
-                    <li class="active"><a href="scheduleclass.php">Schedule Class</a></li>
+                    <li class="active"><a href="scheduleclass.php">Schedule a Class</a></li>
                 </ol>
             </div>
             <!--/.row-->
 
 
             <div class="row">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Schedule a Class</div>
-                    <div class="panel-body" id="schedule">
-                        <form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-                            <div class="col-md-12">
-                                <center>
-                                <div class="col-md-3">
-                                    <select name = "coursecode" class="form-control" required>
-                                        <?php
+                <div class="col-lg-12">
+                    <h2 class="page-header">Schedule a Class</h2>
+                </div>
+            </div>
+            <!--/.row-->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-body" id="schedule">
+                            <form role="form" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+                                <div class="col-md-12">
+                                    <center>
+                                        <div class="col-md-3">
+                                            <select name="coursecode" id="coursecode" class="form-control" required>
+                                                <?php
                                             $query = "SELECT C.COURSECODE AS 'COURSECODE'
                                                        FROM PLANTILLA C 
                                                        WHERE TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
@@ -242,36 +250,41 @@
                                             
                                             
                                         ?>
-                                    </select>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3" style="margin-right:-140px">
+                                            <button type="submit" class="btn btn-default" name="makeup">Make-up Class</button>
+                                        </div>
+                                        <div class="col-md-3" style="margin-right:-140px">
+                                            <button type="submit" class="btn btn-default" name="sub">Substitution</button>
+                                        </div>
+                                        <div class="col-md-3" style="margin-right:-130px">
+                                            <button type="submit" class="btn btn-default" name="transfer">Room Transfer</button>
+                                        </div>
+                                        <div class="col-md-3" style="margin-right:-120px">
+                                            <button type="submit" class="btn btn-default" name="changetime">Change in time</button>
+                                        </div>
+                                        <div class="col-md-3" style="margin-right:-140px">
+                                            <button type="submit" class="btn btn-default" name="alternative">Alternative Class</button>
+                                        </div>
+                                    </center>
                                 </div>
-                                <div class="col-md-3" style="margin-right:-140px">
-                                    <button type="submit" class="btn btn-default" name="makeup">Make-up Class</button>
-                                </div>
-                                <div class="col-md-3" style="margin-right:-140px">
-                                    <button type="submit" class="btn btn-default" name="sub">Substitution</button>
-                                </div>
-                                <div class="col-md-3" style="margin-right:-130px">
-                                    <button type="submit" class="btn btn-default" name="transfer">Room Transfer</button>
-                                </div>
-                                <div class="col-md-3" style="margin-right:-120px">
-                                    <button type="submit" class="btn btn-default" name="changetime">Change in time</button>
-                                </div>
-                                <div class="col-md-3" style="margin-right:-140px">
-                                    <button type="submit" class="btn btn-default" name="alternative">Alternative Class</button>
-                                </div>
-                                </center>
-                            </div>
-                        </form> <br><br><br>
-                        <?php
+                            </form>
+                            <br>
+                            <br>
+                            <br>
+                            <?php
                             if(isset($_POST['makeup'])){
                             $_SESSION['coursecode'] = $_POST['coursecode'];
-                            echo   '<form method="post">
+                            echo   '<h3>Schedule a Make-up Class</h3><br>
+                                    <form method="post">
+                                    <div class="row">
                                         <div class="form-group col-md-12"> 
-                                            <div class="col-md-1">
-                                                <label> Section: </label>
+                                            <div class="col-md-1 col-md-offset-3">
+                                                <label>Section: </label>
                                             </div>
                                             <div class="col-md-2">
-                                                <select name="section" class="form-control" required>
+                                                <select name="section" id="section" class="form-control" required>
                                                     <option value=""></option>';
                                                     // Get Latest School year and Term
                                                     $section = "SELECT section from plantilla 
@@ -285,85 +298,104 @@
                             echo                   '<option value='.$row['section'].'>'.$row['section'].'</option>';
                                                     }
                            
-                            echo               '</select>
+                            echo               '</select>                            
                                             </div>
                                             <div class="col-md-1">
-                                                <label>Scheduled Classroom:</label>
+                                                        <label>Scheduled Classroom:</label>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <input class="form-control" name="room" type="text" value="" required>
+                                                    </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
                                             </div>
-                                            <div class="col-md-2">
-                                                <input class="form-control" name="room" type="text" value="" required>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label>Reason for the Missed Class: </label>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <select name = "reason" class="form-control" required>
-                                                    <option value=""></option>';
-                                                    $absent = "SELECT absentdescription as 'desc', absentcode as 'code'
-                                                                FROM ref_absentreason";
-                                                    $printabsent = mysqli_query($dbc,$absent);
-                                                    while($row2=mysqli_fetch_array($printabsent,MYSQLI_ASSOC)){
-                                                        $name = $row2['code'];
-                                                        $desc = $row2['desc'];
-                                                        echo "<option value='$name'> $desc </option>";
-                                                    }
+                                            <div class="row">
+                                                <div class="form-group col-md-12"> 
+                                                    <div class="col-md-2 col-md-offset-3">
+                                                        <label>Reason for the Missed Class: </label>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <select name = "reason" class="form-control" required>
+                                                            <option value=""></option>';
+                                                            $absent = "SELECT absentdescription as 'desc', absentcode as 'code'
+                                                                        FROM ref_absentreason";
+                                                            $printabsent = mysqli_query($dbc,$absent);
+                                                            while($row2=mysqli_fetch_array($printabsent,MYSQLI_ASSOC)){
+                                                                $name = $row2['code'];
+                                                                $desc = $row2['desc'];
+                                                                echo "<option value='$name'> $desc </option>";
+                                                            }
 
-                            echo               '</select>
+                                echo                    '</select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-2 col-md-offset-3">
+                                                    <label>Missed Class Date:</label>
+                                                </div>                                    
+                                                <div class="col-md-4">
+                                                    <input class="form-control date" id="misseddate" name="misseddate" type="date" required />
+                                                    
+                                                </div>
+                                            </div>
+                                        <br>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-2 col-md-offset-3">
+                                                    <label>Make-up Class Date: </label>
+                                                </div>                                        
+                                                <div class="col-md-4">
+                                                    <input class="form-control" class="date" name="makeupdate" type="date" required>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="form-group col-md-12">
-                                            <div class="col-md-2">
-                                                <label>Missed Class Date:</label>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <input class="form-control" class="date" name="misseddate" type="date" required>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label>Make-up Class Date: </label>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <input class="form-control" class="date" name="makeupdate" type="date" required>
-                                            </div>
-                                        </div>
-                                        <div class="form-group col-md-12">
-                                            <div class="col-md-3 col-md-offset-2">
-                                                <label>Make-up Class Start Time:</label>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <select name="mustarthour" class="form-control" required>
-                                                    <option value="">HH</option>
-                                                    <option value="07">07</option>
-                                                    <option value="08">08</option>
-                                                    <option value="09">09</option>
-                                                    <option value="10">10</option>
-                                                    <option value="11">11</option>
-                                                    <option value="12">12</option>
-                                                    <option value="13">13</option>
-                                                    <option value="14">14</option>
-                                                    <option value="15">15</option>
-                                                    <option value="16">16</option>
-                                                    <option value="17">17</option>
-                                                    <option value="18">18</option>
-                                                    <option value="19">19</option>
-                                                    <option value="20">20</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <select name="mustartminute" class="form-control" required>
-                                                    <option value="">MM</option>
-                                                    <option value="00">00</option>
-                                                    <option value="15">15</option>
-                                                    <option value="30">30</option>
-                                                    <option value="45">45</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="form-group col-md-12">
-                                            <center>
-                                               <button type="submit" class="btn btn-primary" name="addmakeup">Create Class</button> 
-                                            </center>
-                                        </div>';
-                            echo   '</form>';
+                                        <div class="row">                                            
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-2 col-md-offset-3">
+                                                    <label>Make-up Class Start Time:</label>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <select name="mustarthour" class="form-control" required>
+                                                        <option value="">HH</option>
+                                                        <option value="07">07</option>
+                                                        <option value="08">08</option>
+                                                        <option value="09">09</option>
+                                                        <option value="10">10</option>
+                                                        <option value="11">11</option>
+                                                        <option value="12">12</option>
+                                                        <option value="13">13</option>
+                                                        <option value="14">14</option>
+                                                        <option value="15">15</option>
+                                                        <option value="16">16</option>
+                                                        <option value="17">17</option>
+                                                        <option value="18">18</option>
+                                                        <option value="19">19</option>
+                                                        <option value="20">20</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <select name="mustartminute" class="form-control" required>
+                                                        <option value="">MM</option>
+                                                        <option value="00">00</option>
+                                                        <option value="15">15</option>
+                                                        <option value="30">30</option>
+                                                        <option value="45">45</option>
+                                                    </select>
+                                                </div>
+                                            </div>                                            
+                                            <div class="form-group col-md-12">
+                                            <br>
+                                                <center>
+                                                   <button type="submit" class="btn btn-primary" name="addmakeup">Create Class</button> 
+                                                </center>
+                                            <br>
+                                            </div>';
+                            echo   '</div>
+                                    </form>';
 
                             
                             
@@ -373,64 +405,79 @@
 
                             if (isset($_POST['sub'])){
                                 $_SESSION['coursecode'] = $_POST['coursecode'];
-                                echo '<form method="post">
-                                        <div class="form-group col-md-12">
-                                            <div class="col-md-1">
-                                                <label> Section: </label>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <select name="section" class="form-control" required>
-                                                    <option value=""></option>';
-                                                    // Get Latest Term and Schoolyear
-                                                    $section = "SELECT section from plantilla 
-                                                    where coursecode = '{$_SESSION['coursecode']}'
-                                                    and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
-                                                    and schoolyear = YEAR(CURDATE()) 
-                                                    group by section";
-                                                    $getsection = mysqli_query($dbc, $section);
-                                                    
-                                                    while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
-                                echo                   '<option value='.$row['section'].'>'.$row['section'].'</option>';
-                                                    }
-                                echo        '   </select>
-                                            </div> 
-                                            <div class="col-md-2">
-                                                <label> Class Date: </label>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <input type="date" name="subdate" class="form-control" required>
-                                            </div>
-                                            <div class="col-md-1">
-                                                <label> Substitute Faculty: </label>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <select name="facultysub" class="form-control" required>
-                                                    <option value=""></option>';
+                                echo '<h3>Schedule a Substitution</h3><br>
+                                        <div>
+                                        <form method="post">
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-1 col-md-offset-4">
+                                                    <label> Section: </label>
+                                                    <br>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <select name="section" class="form-control" required>
+                                                        <option value=""></option>';
+                                                        // Get Latest Term and Schoolyear
+                                                        $section = "SELECT section from plantilla 
+                                                        where coursecode = '{$_SESSION['coursecode']}'
+                                                        and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
+                                                        and schoolyear = YEAR(CURDATE()) 
+                                                        group by section";
+                                                        $getsection = mysqli_query($dbc, $section);
 
-                                                    $faculty = "SELECT facultyid from plantilla where coursecode = '{$_SESSION['coursecode']}'";
-                                                    $getfaculty = mysqli_query($dbc, $faculty);
-                                                    $row10 = mysqli_fetch_array($getfaculty, MYSQLI_ASSOC);
-
-                                                    $facultydept = "SELECT rd.departmentid as deptid from ref_department rd join faculty f
-                                                                    on rd.departmentid = f.departmentid where facultyid = '{$row10['facultyid']}'";
-                                                    $getfacultydept = mysqli_query($dbc, $facultydept);
-                                                    $row11 = mysqli_fetch_array($getfacultydept, MYSQLI_ASSOC);
-
-                                                    $dept = "SELECT f.facultyid, concat(f.firstname, ' ', f.lastname) as facultyname from faculty f join ref_department rd
-                                                            on rd.departmentid = f.departmentid where rd.departmentid = '{$row11['deptid']}'
-                                                            and f.facultyid != '{$row10['facultyid']}'";
-                                                    $getdept = mysqli_query($dbc, $dept);
-
-                                                    while ($row9 = mysqli_fetch_array($getdept, MYSQLI_ASSOC)){
-                                                        echo '<option value="'.$row9['facultyid'].'">'.$row9['facultyname'].'</option>';
-                                                    }
-                                echo            '</select>
+                                                        while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
+                                    echo                   '<option value='.$row['section'].'>'.$row['section'].'</option>';
+                                                        }
+                                    echo        '   </select>
+                                                </div> 
                                             </div>
                                         </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-1 col-md-offset-4">
+                                                    <label> Class Date: </label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="date" name="subdate" class="form-control" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-1 col-md-offset-4">
+                                                    <label> Substitute Faculty: </label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <select name="facultysub" class="form-control" required>
+                                                        <option value=""></option>';
+
+                                                        $faculty = "SELECT facultyid from plantilla where coursecode = '{$_SESSION['coursecode']}'";
+                                                        $getfaculty = mysqli_query($dbc, $faculty);
+                                                        $row10 = mysqli_fetch_array($getfaculty, MYSQLI_ASSOC);
+
+                                                        $facultydept = "SELECT rd.departmentid as deptid from ref_department rd join faculty f
+                                                                        on rd.departmentid = f.departmentid where facultyid = '{$row10['facultyid']}'";
+                                                        $getfacultydept = mysqli_query($dbc, $facultydept);
+                                                        $row11 = mysqli_fetch_array($getfacultydept, MYSQLI_ASSOC);
+
+                                                        $dept = "SELECT f.facultyid, concat(f.firstname, ' ', f.lastname) as facultyname from faculty f join ref_department rd
+                                                                on rd.departmentid = f.departmentid where rd.departmentid = '{$row11['deptid']}'
+                                                                and f.facultyid != '{$row10['facultyid']}'";
+                                                        $getdept = mysqli_query($dbc, $dept);
+
+                                                        while ($row9 = mysqli_fetch_array($getdept, MYSQLI_ASSOC)){
+                                                            echo '<option value="'.$row9['facultyid'].'">'.$row9['facultyname'].'</option>';
+                                                        }
+                                    echo            '</select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br>
                                         <div class="col-md-12">
                                             <center>
                                             <button type="submit" class="btn btn-primary" name="substitution"> Create Class </button>
                                             </center>
+                                            <br>
                                         </div>';
 
                                 echo '</form>';
@@ -438,51 +485,65 @@
 
                             if (isset($_POST['transfer'])){
                                 $_SESSION['coursecode'] = $_POST['coursecode'];
-                                echo '<form method="post">
-                                        <div class="form-group col-md-12">
-                                            <div class="col-md-1">
-                                                <label> Section: </label>
+                                echo '<h3>Schedule a Room Transfer</h3><br>
+                                        <form method="post">
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-1 col-md-offset-4">
+                                                    <label> Section: </label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <select name="section" class="form-control" required>
+                                                        <option value=""></option>';
+                                                        $section = "SELECT section from plantilla 
+                                                                    where coursecode = '{$_SESSION['coursecode']}' 
+                                                                    and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
+                                                                    and schoolyear = YEAR(CURDATE()) 
+                                                                    group by section";
+                                                        $getsection = mysqli_query($dbc, $section);
+
+                                                        while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
+                                    echo                   '<option value='.$row['section'].'>'.$row['section'].'</option>';
+                                                        }
+                                    echo        '   </select>
+                                                </div> 
                                             </div>
-                                            <div class="col-md-2">
-                                                <select name="section" class="form-control" required>
-                                                    <option value=""></option>';
-                                                    $section = "SELECT section from plantilla 
-                                                                where coursecode = '{$_SESSION['coursecode']}' 
-                                                                and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
-                                                                and schoolyear = YEAR(CURDATE()) 
-                                                                group by section";
-                                                    $getsection = mysqli_query($dbc, $section);
-                                                    
-                                                    while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
-                                echo                   '<option value='.$row['section'].'>'.$row['section'].'</option>';
-                                                    }
-                                echo        '   </select>
-                                            </div> 
-                                            <div class="col-md-2">
-                                                <label> Transfer Room: </label>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <input type="text" name="room" class="form-control" required>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label> <input type="radio" name="type" id="optionsRadios1" value="RT" onclick="enabledate()" > Temporary Transfer </label>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label> <input type="radio" name="type" id="optionsRadios1" value="PR" onclick="disabledate()"> Permanent Transfer </label>
-                                            </div> 
                                         </div>
-                                        <div class="col-md-12 col-md-offset-3">
-                                            <div class="col-md-2"> 
-                                                <label> Transfer Date: </label>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-2 col-md-offset-4">
+                                                    <label> Transfer Room: </label>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <input type="text" name="room" class="form-control" required>
+                                                </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <input type="date" name="transferdate" id="transferdate" class="form-control" required>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-2 col-md-offset-4">
+                                                    <label> <input type="radio" name="type" id="optionsRadios1" value="RT" onclick="enabledate()" > Temporary Transfer </label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label> <input type="radio" name="type" id="optionsRadios1" value="PR" onclick="disabledate()"> Permanent Transfer </label>
+                                                </div> 
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12 col-md-offset-4">
+                                                <div class="col-md-1"> 
+                                                    <label> Transfer Date: </label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="date" name="transferdate" id="transferdate" class="form-control" required>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-md-12"> <br> 
                                             <center>
                                             <button type="submit" class="btn btn-primary" name="transferred"> Create Class </button>
                                             </center>
+                                            <br>
                                         </div>';
                                 echo '</form>';
                             }
@@ -490,81 +551,100 @@
 
                             if (isset($_POST['changetime'])){
                                 $_SESSION['coursecode'] = $_POST['coursecode'];
-                                echo '<form method="post">
-                                        <div class="form-group col-md-12">
-                                            <div class="col-md-1">
-                                                <label> Section: </label>
+                                echo '<h3>Schedule a Change in Time</h3><br>
+                                        <form method="post">
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-1 col-md-offset-3">
+                                                    <label> Section: </label>
+                                                </div>
+                                                <div class="col-md-4    ">
+                                                    <select name="section" class="form-control" required>
+                                                        <option value=""></option>';
+                                                        $section = "SELECT section from plantilla 
+                                                                    where coursecode = '{$_SESSION['coursecode']}' 
+                                                                    and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
+                                                                    and schoolyear = YEAR(CURDATE()) 
+                                                                    group by section";
+                                                        $getsection = mysqli_query($dbc, $section);
+
+                                                        while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
+                                echo                   '<option value='.$row['section'].'>'.$row['section'].'</option>';
+                                                        }
+
+                                echo               '</select>
+                                                </div>
                                             </div>
-                                            <div class="col-md-2">
-                                                <select name="section" class="form-control" required>
-                                                    <option value=""></option>';
-                                                    $section = "SELECT section from plantilla 
-                                                                where coursecode = '{$_SESSION['coursecode']}' 
-                                                                and TERM = (SELECT TERM from term where MONTH(CURDATE()) between start and end)
-                                                                and schoolyear = YEAR(CURDATE()) 
-                                                                group by section";
-                                                    $getsection = mysqli_query($dbc, $section);
-                                                    
-                                                    while ($row = mysqli_fetch_array($getsection, MYSQLI_ASSOC)){
-                            echo                   '<option value='.$row['section'].'>'.$row['section'].'</option>';
-                                                    }
-                           
-                            echo               '</select>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-3 col-md-offset-3">
+                                                    <label> Scheduled Room: </label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                     <input class="form-control" name="room" type="text" required>
+                                                </div>
                                             </div>
-                                            <div class="col-md-2">
-                                                <label> Scheduled Room: </label>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-3 col-md-offset-3">
+                                                    <label> Alternative Class Date: </label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input class="form-control" class="date" name="altdate" type="date" required>
+                                                </div>
                                             </div>
-                                            <div class="col-md-2">
-                                                 <input class="form-control" name="room" type="text" required>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-3 col-md-offset-3">
+                                                    <label>Alternative Class Start Time:</label>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <select name="altstarthour" class="form-control" required>
+                                                        <option value="">HH</option>
+                                                        <option value="07">07</option>
+                                                        <option value="08">08</option>
+                                                        <option value="09">09</option>
+                                                        <option value="10">10</option>
+                                                        <option value="11">11</option>
+                                                        <option value="12">12</option>
+                                                        <option value="13">13</option>
+                                                        <option value="14">14</option>
+                                                        <option value="15">15</option>
+                                                        <option value="16">16</option>
+                                                        <option value="17">17</option>
+                                                        <option value="18">18</option>
+                                                        <option value="19">19</option>
+                                                        <option value="20">20</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <select name="altstartminute" class="form-control" required>
+                                                        <option value="">MM</option>
+                                                        <option value="00">00</option>
+                                                        <option value="15">15</option>
+                                                        <option value="30">30</option>
+                                                        <option value="45">45</option>
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <div class="col-md-2">
-                                                <label> Alternative Class Date: </label>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-3 col-md-offset-3">
+                                                    <label>Change in Time:</label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input class="form-control" class="date" name="change" type="date" required>
+                                                </div>  
                                             </div>
-                                            <div class="col-md-3">
-                                                <input class="form-control" class="date" name="altdate" type="date" required>
-                                            </div>
-                                        </div>  
-                                        <div class="form-group col-md-12">
-                                            <div class="col-md-3">
-                                                <label>Alternative Class Start Time:</label>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <select name="altstarthour" class="form-control" required>
-                                                    <option value="">HH</option>
-                                                    <option value="07">07</option>
-                                                    <option value="08">08</option>
-                                                    <option value="09">09</option>
-                                                    <option value="10">10</option>
-                                                    <option value="11">11</option>
-                                                    <option value="12">12</option>
-                                                    <option value="13">13</option>
-                                                    <option value="14">14</option>
-                                                    <option value="15">15</option>
-                                                    <option value="16">16</option>
-                                                    <option value="17">17</option>
-                                                    <option value="18">18</option>
-                                                    <option value="19">19</option>
-                                                    <option value="20">20</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <select name="altstartminute" class="form-control" required>
-                                                    <option value="">MM</option>
-                                                    <option value="00">00</option>
-                                                    <option value="15">15</option>
-                                                    <option value="30">30</option>
-                                                    <option value="45">45</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label>Change in Time:</label>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <input class="form-control" class="date" name="change" type="date" required>
-                                            </div>  
                                         </div>
                                         <center>
+                                        <br>
                                            <button type="submit" class="btn btn-primary" name="addchange">Create Class</button> 
+                                        <br><br>
                                         </center> ';
                                 echo '</form>';
                             }
@@ -572,9 +652,11 @@
                             if (isset($_POST['alternative'])){
                                 // Radio Button on Type of Class
                                 $_SESSION['coursecode'] = $_POST['coursecode'];
-                                echo '<form method="post">
+                                echo '<h3>Schedule an Alternative Class</h3><br>
+                                        <form method="post">
+                                    <div class="row">
                                         <div class="form-group col-md-12">
-                                            <div class="col-md-1">
+                                            <div class="col-md-1 col-md-offset-3">
                                                 <label> Section: </label>
                                             </div>
                                             <div class="col-md-2">
@@ -593,21 +675,27 @@
                            
                             echo               '</select>
                                             </div>
-                                            <div class="col-md-2">
+                                            <div class="col-md-1">
                                                 <label> Venue: </label>
                                             </div>
                                             <div class="col-md-2">
                                                 <input type="text" name="venue" required class="form-control">
                                             </div>
-                                            <div class="col-md-2">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <div class="col-md-2 col-md-offset-3">
                                                 <label> Alternative Class Date: </label>
                                             </div>
                                             <div class="col-md-3">
                                                 <input class="form-control" class="date" name="altdate" type="date" required>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="row">
                                         <div class="form-group col-md-12">
-                                            <div class="col-md-2">
+                                            <div class="col-md-2 col-md-offset-3">
                                                 <label>Alternative Class Start Time:</label>
                                             </div>
                                             <div class="col-md-2">
@@ -638,7 +726,11 @@
                                                     <option value="45">45</option>
                                                 </select>
                                             </div>
-                                            <div class="col-md-2">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <div class="col-md-2 col-md-offset-3">
                                                 <label>Alternative Class End Time:</label>
                                             </div>
                                             <div class="col-md-2">
@@ -670,6 +762,8 @@
                                                 </select>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="row">
                                         <div class="col-md-12">
                                             <div class="col-md-2 col-md-offset-3">
                                                 <label> Class Type: </label>
@@ -683,8 +777,10 @@
                                         </div> 
                                         <div class="form-group col-md-12">
                                             <center><br>
+                                            <br>
                                                <button type="submit" class="btn btn-primary" name="addalternative">Create Class</button> 
-                                            </center> 
+                                            </center>
+                                            <br><br>
                                         </div>';
                                 echo '</form>';
                             }
@@ -692,7 +788,7 @@
 
 
 
-                        <?php
+                                <?php
                             if (isset($_POST['addmakeup'])){
                                 $message = NULL;
                                 $_SESSION['section'] = $_POST['section'];
@@ -1502,6 +1598,7 @@
                                     $message.='<p> Class room scheduled has conflict with another class in plantilla! </p>';
                                 }
 
+
                                 //Make up class
                                 $valid2 = 0;
                                 $makeup = "SELECT makeupdate, makeupstarttime, makeupendtime, makeuproom from mv_facultymakeup";
@@ -2218,12 +2315,12 @@
                                 $gettransfer = mysqli_query($dbc, $roomtransfer);
 
                                 while ($row8 = mysqli_fetch_array($gettransfer,MYSQLI_ASSOC)){
-                                    if ($_SESSION['altdate'] == "{$row8['transferdate']}" && $altstarttime >= "{$row8['starttime']}"
-                                    && $altendtime <= "{$row8['endtime']}" && $_SESSION['venue'] == "{$row8['venue']}"){
+                                    if ($_SESSION['altdate'] == "{$row8['transferdate']}" &&( $altstarttime >= "{$row8['starttime']}"
+                                    && $altendtime <= "{$row8['endtime']}" && $_SESSION['venue'] == "{$row8['venue']}")){
                                         $valid4 = 1;
-                                    } else if ($_SESSION['altdate'] == "{$row8['transferdate']}" && $altstarttime >= "{$row8['starttime']}"
+                                    } else if ($_SESSION['altdate'] == "{$row8['transferdate']}" &&( $altstarttime >= "{$row8['starttime']}"
                                     && $altstarttime <= "{$row8['endtime']}" || $altendtime <= "{$row8['endtime']}" && 
-                                    $altendtime >= "{$row8['starttime']}" ){
+                                    $altendtime >= "{$row8['starttime']}") ){
 
                                         if ($_SESSION['venue'] == "{$row8['venue']}"){
                                              $valid4 = 1;
@@ -2300,12 +2397,11 @@
                                 }
                             }
                         ?>
+                        </div>
                     </div>
                 </div>
             </div>
-            <!--/.row-->
         </div>
-        <!--/.main-->
 
         <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 
@@ -2440,24 +2536,26 @@
 
         <script>
             var output;
-            $('input[type=file]').change(function(){
+            $('input[type=file]').change(function () {
                 readFile($(this).attr('id'));
             });
-            
-            
+
+
 
             function readFile(thiss) {
-                var files=document.getElementById(thiss).files;
+                var files = document.getElementById(thiss).files;
 
-                var i,f;
+                var i, f;
                 for (i = 0, f = files[i]; i != files.length; ++i) {
                     var reader = new FileReader();
                     var name = files[0].name;
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         var data = e.target.result;
                         //var wb = XLSX.read(data, {type: 'binary'});
                         var arr = String.fromCharCode.apply(null, new Uint8Array(data));
-                        var wb = XLSX.read(btoa(arr), {type: 'base64'});
+                        var wb = XLSX.read(btoa(arr), {
+                            type: 'base64'
+                        });
                         process_wb(wb);
                     };
                     //reader.readAsBinaryString(f);
@@ -2466,89 +2564,121 @@
             }
 
             function process_wb(wb) {
-                
+
 
 
                 /*output = JSON.stringify(to_json(wb), 2, 2);
-                */
+                 */
                 output = to_json(wb);
 
 
-                
 
 
-            console.log(output);
-        }
 
-        function to_json(workbook) {
-            var result = {};
-            workbook.SheetNames.forEach(function(sheetName) {
-                var roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-                if(roa.length > 0){
-                    result[sheetName] = roa;
+                console.log(output);
+            }
+
+            function to_json(workbook) {
+                var result = {};
+                workbook.SheetNames.forEach(function (sheetName) {
+                    var roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+                    if (roa.length > 0) {
+                        result[sheetName] = roa;
+                    }
+                });
+                return result;
+            }
+            $('#plantilla-button').click(function () {
+                if (output) {
+                    $.post({
+
+                        url: 'insert.php',
+                        data: output,
+                        success: function (data) {
+                            alert(data);
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+
+                            alert(textStatus);
+                            alert(errorThrown);
+                        }
+                    });
+                } else {
+                    alert('Failed!');
                 }
+                $('input[type=file]').val('');
+                $('#myModalPlantilla').modal('hide');
             });
-            return result;
-        }
-        $('#plantilla-button').click(function(){
-            if(output){
-                $.post({
-            
-                  url: 'insert.php',
-                  data:output,
-                  success:function(data){
-                    alert(data);
-                  },
-                   error : function(jqXHR, textStatus, errorThrown) {
-            
-                    alert(textStatus);
-                    alert(errorThrown);
-                } 
-                });
-             }
-              else{
-                alert('Failed!');
-             }
-             $('input[type=file]').val('');
-             $('#myModalPlantilla').modal('hide');
-        });
-        $('#checked-button').click(function(){
-            if(output){
-                $.post({
-            
-                  url: 'insertCheckedRooms.php',
-                  data:{'data':output},
-                  success:function(data){
-                    alert(data);
-                  },
-                   error : function(jqXHR, textStatus, errorThrown) {
-            
-                    alert(textStatus);
-                    alert(errorThrown);
-                } 
-                });
-             }
-              else{
-                alert('Failed!');
-             }
-             $('input[type=file]').val('');
-             $('#myModalCheckedRooms').modal('hide');
-        });
-            
-        </script>  
+            $('#checked-button').click(function () {
+                if (output) {
+                    $.post({
 
-        <script type="text/javascript">
-          function disabledate()
-          {
-            $("#transferdate").attr('disabled','true');
-          }
+                        url: 'insertCheckedRooms.php',
+                        data: {
+                            'data': output
+                        },
+                        success: function (data) {
+                            alert(data);
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+
+                            alert(textStatus);
+                            alert(errorThrown);
+                        }
+                    });
+                } else {
+                    alert('Failed!');
+                }
+                $('input[type=file]').val('');
+                $('#myModalCheckedRooms').modal('hide');
+            });
         </script>
 
-         <script type="text/javascript">
-          function enabledate()
-          {
-            $("#transferdate").removeAttr('disabled');
-          }
+        <script type="text/javascript">
+            function disabledate() {
+                $("#transferdate").attr('disabled', 'true');
+            }
+        </script>
+
+        <script type="text/javascript">
+            function enabledate() {
+                $("#transferdate").removeAttr('disabled');
+            }
+        </script>
+        <script>
+            $('#section').change(function(){
+                console.log('AGUY');
+                $.get({
+                    url: 'ajaxAbsentDate.php',
+                    
+                    data: {
+                        "courseCode": "<?php echo $_SESSION['coursecode']; ?>",
+                        "section": $(this).val()
+                    },
+                    success: function(data){
+                        
+                        let missedDateElement = $('#misseddate');
+                        missedDateElement.empty();
+                        
+                        data.forEach(function(item, index){
+                            
+                            console.log(item);
+                            var date = new Date(item);
+                            console.log(date.toDateString());
+                            // d/m/y
+                            let value = date.getDate() + '/' + date.getMonth() + '/' + date.getFullYear();
+                            missedDateElement.append('<option value="'+value+'">'+ date.toDateString() +'</option>');
+                            
+                            
+                        });     
+                        
+                        
+                    }
+                    
+                    
+                });
+            });
+            
         </script>
 
     </body>

@@ -84,7 +84,7 @@
 								}else{
 									$ctr++;
 									if($temp){
-										echo $insertQuery;
+									 
 										array_push($errorLine,$er);	
 										$temp = false;
 										$good=false;

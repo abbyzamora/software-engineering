@@ -320,7 +320,7 @@ if(isset($_SESSION['adminemail'])){
 														   p.endTime,
 														   CONCAT(DATE_FORMAT(p.startTime, '%H:%i'), ' - ', DATE_FORMAT(p.endTime, '%H:%i')) AS time,
 														   s.dayID,
-														   CONCAT(trim(f.firstName), ', ', trim(f.lastName)) as faculty,
+														   CONCAT(trim(f.firstName), ' ', trim(f.lastName)) as faculty,
 														   s.term,
 															 ab.shiftCode as shift
 													  FROM MV_Substitution s JOIN Plantilla p

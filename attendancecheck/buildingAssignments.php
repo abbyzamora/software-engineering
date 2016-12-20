@@ -199,7 +199,7 @@ if(isset($_SESSION['adminemail'])){
 								foreach ($buildings as $building => $shifts) {
 									foreach ($shifts as $shift => $classes) {
 										foreach($classes as $index => $class){
-												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
+												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['makeUpStartTime'] AND $class['startTime'] == $row['makeUpEndTime']){
 													unset($buildings[$building][$shift][$index]);
 												}
 										}
@@ -282,10 +282,21 @@ if(isset($_SESSION['adminemail'])){
 											  AND mu.makeUpStartTime BETWEEN s.shiftStart AND s.shiftEnd
 											  AND ab.accountNo = $accountNo;";
 							$result = $dbc->query($query);
-
+							
 							foreach ($result as $row) {
+
+
+									foreach ($buildings as $building => $shifts) {
+										foreach ($shifts as $shift => $classes) {
+											foreach($classes as $index => $class){
+													if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['makeUpStartTime'] AND $class['startTime'] == $row['makeUpEndTime']){
+														unset($buildings[$building][$shift][$index]);
+													}
+											}
+										}
+									}
 								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
-								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['makeUpStartTime'], 'endTime' => $row['makeUpEndTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
 							}
 
 							$currentDate = date('F d, Y');

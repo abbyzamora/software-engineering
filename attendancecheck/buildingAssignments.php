@@ -236,7 +236,7 @@ if(isset($_SESSION['adminemail'])){
 													                            ON r.buildingCode = b.buildingCode
 																			  JOIN (SELECT *
 																					  FROM Assigned_Building
-																					 WHERE accountNo = 2) ab
+																					 WHERE accountNo = $accountNo) ab
 																				ON b.buildingCode = ab.buildingCode
 																			  JOIN REF_Shift s
 													                            ON ab.shiftCode = s.shiftCode
@@ -260,55 +260,56 @@ if(isset($_SESSION['adminemail'])){
 
 							//add make-up classes for today
 							$query = "SELECT
-													  b.buildingName,
-												    fmu.roomCode,
-												    fmu.courseCode,
-												    fmu.section,
-												    s.shiftCode as shift,
-												    p.startTime as originalStartTime,
-												    p.endTime as originalEndTime,
-												    CONCAT(DATE_FORMAT(fmu.makeUpStartTime, '%H:%i'), ' - ', DATE_FORMAT(fmu.makeUpEndTime, '%H:%i')) AS time,
-												    fmu.makeUpStartTime as alternativeStartTime,
-												    fmu.makeUpEndTime as alternativeEndTime,
-												    fmu.dayID,
-													CONCAT(f.firstName, ' ', f.lastName) as faculty,
-												    fmu.term
-												 FROM MV_FacultyMakeUp fmu JOIN Plantilla p
-																			 ON fmu.courseCode = p.courseCode
-																			AND fmu.facultyID = p.facultyID
-												                            AND fmu.dayID = p.dayID
-												                            AND fmu.schoolYear = p.schoolYear
-												                            AND fmu.term = p.term
-												                            AND fmu.section = p.section
-																		   JOIN Room r
-																			 ON p.roomCode = r.roomCode
-																		   JOIN Ref_Building b
-												                             ON r.buildingCode = b.buildingCode
-																		   JOIN (SELECT *
-												                                    FROM Assigned_Building
-																				  WHERE accountNo = 2) ab
-																			 ON b.buildingCode = ab.buildingCode
-																		   JOIN REF_Shift s
-												                             ON ab.shiftCode = s.shiftCode
-																		   JOIN Faculty f
-												                              ON f.facultyID = fmu.facultyID
-												WHERE fmu.schoolYear = YEAR(CURRENT_TIMESTAMP)
-												  AND fmu.term = (SELECT MAX(term)
-												                FROM MV_FacultyMakeUp
-															   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-												  AND fmu.makeUpDate = CURDATE()
-												  AND fmu.makeUpStartTime BETWEEN s.shiftStart AND s.shiftEnd;";
+										 b.buildingName as  building,
+									    fmu.roomCode,
+									    fmu.courseCode,
+									    fmu.section,
+									    s.shiftCode as shift,
+									    p.startTime as originalStartTime,
+									    p.endTime as originalEndTime,
+									    CONCAT(DATE_FORMAT(fmu.makeUpStartTime, '%H:%i'), ' - ', DATE_FORMAT(fmu.makeUpEndTime, '%H:%i')) AS time,
+									    fmu.makeUpStartTime as alternativeStartTime,
+									    fmu.makeUpEndTime as alternativeEndTime,
+									    fmu.dayID,
+										CONCAT(f.firstName, ' ', f.lastName) as faculty,
+									    fmu.term
+									 FROM MV_FacultyMakeUp fmu JOIN Plantilla p
+																 ON fmu.courseCode = p.courseCode
+																AND fmu.facultyID = p.facultyID
+									                            AND fmu.dayID = p.dayID
+									                            AND fmu.schoolYear = p.schoolYear
+									                            AND fmu.term = p.term
+									                            AND fmu.section = p.section
+															   JOIN Room r
+																 ON p.roomCode = r.roomCode
+															   JOIN Ref_Building b
+									                             ON r.buildingCode = b.buildingCode
+															   JOIN (SELECT *
+									                                    FROM Assigned_Building
+																	  WHERE accountNo = $accountNo) ab
+																 ON b.buildingCode = ab.buildingCode
+															   JOIN REF_Shift s
+									                             ON ab.shiftCode = s.shiftCode
+															   JOIN Faculty f
+									                              ON f.facultyID = fmu.facultyID
+									WHERE fmu.schoolYear = YEAR(CURRENT_TIMESTAMP)
+									  AND fmu.term = (SELECT MAX(term)
+									                FROM MV_FacultyMakeUp
+												   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+									  AND fmu.makeUpDate = CURDATE()
+									  AND fmu.makeUpStartTime BETWEEN s.shiftStart AND s.shiftEnd;";
 
 							$result = $dbc->query($query);
 
 							foreach ($result as $row) {
-								foreach($buildings[$row['building']][$row['shift']] as $index => $classes){
+								foreach($buildings[$row['building']][$row['shift']] as $index => $class){
 									if($row['courseCode'] == $class[1] AND $row['section'] == $class[2] AND $row['originalStartTime'] == $class['startTime'] AND $row['originalEndTime'] == $class['endTime']){
 										unset($buildings[$row['building']][$row['shift']][$index]);
 									}
 								}
-								$buildings[$row['building']][$row['shift']][] = ['startTime' => $row['makeUpStartTime'], 'endTime' => $row['makeUpEndTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'],$row['term']];
+								$buildings[$row['building']][$row['shift']][] = ['startTime' => $row['alternativeStartTime'], 'endTime' => $row['alternativeEndTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty'], $row['term']];
 							}
+					
 
 /* remmovniga nd adding of Substitute*/
 							$query = "SELECT b.buildingName as building,
@@ -360,6 +361,7 @@ if(isset($_SESSION['adminemail'])){
 
 							$currentDate = date('F d, Y');
 						?>
+
 						<table data-toggle="table">
 							<thead>
 								<tr>

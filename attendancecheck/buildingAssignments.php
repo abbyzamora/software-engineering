@@ -185,6 +185,27 @@ if(isset($_SESSION['adminemail'])){
 								}
 							}
 
+							// remove make up classes
+							$result = $dbc->query("SELECT *
+																		   FROM MV_FacultyMakeUp
+																		WHERE schoolYear = YEAR(CURRENT_TIMESTAMP)
+																		  AND term = (SELECT MAX(term)
+																						FROM MV_FacultyMakeUp
+																					  WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+																		  AND dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
+																		  AND makeUpDate = CURDATE();");
+
+							foreach($result as $row){
+								foreach ($buildings as $building => $shifts) {
+									foreach ($shifts as $shift => $classes) {
+										foreach($classes as $index => $class){
+												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
+													unset($buildings[$building][$shift][$index]);
+												}
+										}
+									}
+								}
+							}
 
 /* ADDITION SECTION */
 							//add the transfered classes for today
@@ -216,11 +237,45 @@ if(isset($_SESSION['adminemail'])){
 												   AND rt.startTime BETWEEN s.shiftStart AND s.shiftEnd;";
 							$result = $dbc->query($query);
 
+
 							foreach ($result as $row) {
 								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
 								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
 							}
 
+							//add make-up classes for today
+							$query = "SELECT ab.shiftCode as shift, b.buildingName as building, mu.courseCode, mu.roomCode, mu.section,  mu.dayID, mu.makeUpStartTime, mu.makeUpEndTime, CONCAT(DATE_FORMAT(mu.makeUpStartTime, '%H:%i'), ' - ', DATE_FORMAT(mu.makeUpEndTime, '%H:%i')) AS time, SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1) as day, CONCAT(f.lastname, ', ', f.firstName) as faculty
+											   FROM MV_FacultyMakeUp mu JOIN Plantilla p
+																		  ON mu.courseCode = p.courseCode
+																		 AND mu.facultyID = p.facultyID
+											                             AND mu.dayID = p.dayID
+											                             AND mu.schoolYear = p.schoolYear
+											                             AND mu.term = p.term
+											                             AND mu.section = p.section
+																		JOIN Faculty f
+																		  ON mu.facultyID = f.facultyID
+																		JOIN Room r
+																		  ON mu.roomCode = r.roomCode
+																	    JOIN Ref_Building b
+											                              ON r.buildingCode = b.buildingCode
+																	    JOIN Assigned_Building ab
+																		  ON ab.buildingCode = b.buildingCode
+																	    JOIN REF_Shift s
+																		  ON s.shiftCode = ab.shiftCode
+											WHERE mu.schoolYear = YEAR(CURRENT_TIMESTAMP)
+											  AND mu.term = (SELECT MAX(term)
+															FROM MV_FacultyMakeUp
+														  WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+											  AND mu.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
+											  AND mu.makeUpDate = CURDATE()
+											  AND mu.makeUpStartTime BETWEEN s.shiftStart AND s.shiftEnd
+											  AND ab.accountNo = $accountNo;";
+							$result = $dbc->query($query);
+
+							foreach ($result as $row) {
+								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+							}
 
 							$currentDate = date('F d, Y');
 						?>

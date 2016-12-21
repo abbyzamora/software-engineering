@@ -151,20 +151,24 @@ if(isset($_SESSION['adminemail'])){
 							foreach ($result as $row) {
 								$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
 							}
+
 							//we now have a list of buildings
 							// with shifts
 							// with rooms with classes @_@
 							// without room transfers considered
+							/// We must remove the rooms with transfers, make-up, etc.
 
+/* SUBTRATION/REMOVAL SECTION */
 							//remove from plantilla rooms that are transfered
+
 							//get classes that are transfered
 							$query = "SELECT *
 												  FROM MV_RoomTransfer
 												 WHERE originalDate = CURDATE()
 												   AND dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
 												   AND term = (SELECT MAX(term)
-																	FROM Assigned_Building
-																   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+																	       FROM Assigned_Building
+																        WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
 												   AND YEAR(originalDate) = YEAR(CURRENT_TIMESTAMP);";
 							$result = $dbc->query($query);
 
@@ -182,7 +186,7 @@ if(isset($_SESSION['adminemail'])){
 							}
 
 
-
+/* ADDITION SECTION */
 							//add the transfered classes for today
 							$query = "SELECT ab.shiftCode as shift, b.buildingName as building, rt.courseCode, rt.venue, rt.section,  rt.dayID, rt.startTime, rt.endTime, CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS time, SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1) as day, CONCAT(f.lastname, ', ', f.firstName) as faculty
 												  FROM MV_RoomTransfer rt JOIN Plantilla p
@@ -204,7 +208,7 @@ if(isset($_SESSION['adminemail'])){
 																			ON s.shiftCode = ab.shiftCode
 												 WHERE rt.originalDate = CURDATE()
 												   AND rt.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
-												   AND ab.accountNo = 2
+												   AND ab.accountNo = $accountNo
 												   AND ab.schoolYear = YEAR(CURRENT_TIMESTAMP)
 												   AND ab.term = (SELECT MAX(term)
 																	FROM Assigned_Building

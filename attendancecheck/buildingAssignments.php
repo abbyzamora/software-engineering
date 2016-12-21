@@ -177,7 +177,7 @@ if(isset($_SESSION['adminemail'])){
 								foreach ($buildings as $building => $shifts) {
 									foreach ($shifts as $shift => $classes) {
 										foreach($classes as $index => $class){
-												if($class[2] == $row['section']){
+												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
 													unset($buildings[$building][$shift][$index]);
 												}
 										}

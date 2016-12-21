@@ -4,12 +4,13 @@ require_once '../mysql_connect.php';
 session_start();
 
 $accountNo = 2;
+
 if(isset($_SESSION['adminemail'])){
 	$_SESSION['adminemail'] = $_SESSION['user'];
 
 	$printname = "select accountNo, concat(a.firstName,' ', a.lastName) as 'completename', ra.accounttypedescription from accounts a join ref_accounttype ra on a.accounttypeno = ra.accounttypeno where email = '{$_SESSION['adminemail']}'";
 	$printresult = mysqli_query($dbc,$printname);
-	$row=mysqli_fetch_array($printresult,MYSQLI_ASSOC);	
+	$row=mysqli_fetch_array($printresult,MYSQLI_ASSOC);
 
 	$accountNo = $row['accountNo'];
 }
@@ -27,15 +28,15 @@ if(isset($_SESSION['adminemail'])){
 	<link href="css/styles.css" rel="stylesheet">
 	<link href="css/myStyle.css" rel="stylesheet">
 	<link href="css/bootstrap-table.css" rel="stylesheet">
-	
+
 	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-	<script src="js/xlsx.core.min.js"></script> 
-	<script src="js/Blob.js"></script> 
-	<script src="js/FileSaver.min.js"></script> 
-	<script src="js/tableexport.min.js"></script> 
+	<script src="js/xlsx.core.min.js"></script>
+	<script src="js/Blob.js"></script>
+	<script src="js/FileSaver.min.js"></script>
+	<script src="js/tableexport.min.js"></script>
 
 	<!--Icons-->
-	
+
 
 	<!--[if lt IE 9]>
 	<script src="js/html5shiv.js"></script>
@@ -73,10 +74,10 @@ if(isset($_SESSION['adminemail'])){
 					</ul>
 			</div>
 		</div><!-- /.container-fluid -->
-	</nav>		
+	</nav>
 	<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
 		<ul class="nav menu">
-			<li class="userID">			
+			<li class="userID">
 				<div class="panel panel-default">
 					<div class="panel-body">
 						<div class="row col-md-offset-1">
@@ -84,10 +85,10 @@ if(isset($_SESSION['adminemail'])){
                             <p class="pull-left"><h4 id="accounttype"><b><?php echo $row['accounttypedescription']?></b></h4></p>
 						</div>
 					</div>
-				</div>					
+				</div>
 			</li>
 			<li><a href="customerindex.php"><svg class="glyph stroked dashboard-dial"><use xlink:href="#stroked-app-window-with-content"></use></svg> Dashboard</a></li>
-			<li><a data-toggle="modal" href="#myModalCheckedRooms"><span class="glyphicon glyphicon-upload"></span>Upload Checked Rooms</a></li>	
+			<li><a data-toggle="modal" href="#myModalCheckedRooms"><span class="glyphicon glyphicon-upload"></span>Upload Checked Rooms</a></li>
 			<li class="active"><a href="buildingAssignments.php"><svg class="glyph stroked eye"><use xlink:href="#stroked-eye"/></svg> Building Assignments</a></li>
 			<li role="presentation" class="divider"></li>
 
@@ -98,7 +99,7 @@ if(isset($_SESSION['adminemail'])){
 
 	</div><!--/.sidebar-->
 
-	<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">			
+	<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">
 		<div class="row">
 			<ol class="breadcrumb">
 				<li><a href="#"><svg class="glyph stroked home"><use xlink:href="#stroked-home"></use></svg></a></li>
@@ -110,12 +111,115 @@ if(isset($_SESSION['adminemail'])){
 			<div class="col-lg-12">
 				<h2 class="page-header">Building Assignments</h2>
 			</div>
-		</div><!--/.row-->		
+		</div><!--/.row-->
 
 		<div class="row">
 			<div class="col-md-12">
 				<div class="panel panel-default">
 					<div class="panel-body">
+						<?php
+							//retrieve assigned rooms
+							$query = "SELECT B.buildingName, P.roomCode,  P.courseCode, P.section, S.shiftCode as shift,CONCAT(DATE_FORMAT(startTime, '%H:%i'), ' - ', DATE_FORMAT(endTime, '%H:%i')) AS time, startTime, endTime, P.dayID, CONCAT(F.lastname, ', ', F.firstName) as faculty
+													FROM Accounts A JOIN Assigned_Building AB
+																						ON A.ACCOUNTNO = AB.ACCOUNTNO
+																				  JOIN REF_Shift S
+																				  	ON AB.shiftCode = S.shiftCode
+																					JOIN Room R
+																						ON R.BUILDINGCODE = AB.BUILDINGCODE
+																					JOIN Plantilla P
+																						ON P.ROOMCODE = R.ROOMCODE
+																					JOIN Faculty F
+																						ON P.facultyID = F.facultyID
+																					JOIN Ref_Building B
+																					  ON R.buildingCode = B.buildingCode
+												 WHERE A.ACCOUNTNO = $accountNo
+													 AND AB.TERM = (SELECT MAX(TERM)
+																 						FROM Assigned_Building
+																 					  WHERE SCHOOLYEAR = YEAR(NOW()))
+													 AND P.TERM = (SELECT MAX(TERM)
+																					 FROM Assigned_Building
+																					 WHERE SCHOOLYEAR = YEAR(NOW()))
+													 AND AB.SCHOOLYEAR = YEAR(NOW())
+													 AND P.DAYID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
+													 AND P.startTime BETWEEN S.shiftStart AND S.shiftEnd;";
+
+							$result = $dbc->query($query);
+
+							$buildings = [];
+
+							//sort the rooms into buildings and shifts
+							foreach ($result as $row) {
+								$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+							}
+							//we now have a list of buildings
+							// with shifts
+							// with rooms with classes @_@
+							// without room transfers considered
+
+							//remove from plantilla rooms that are transfered
+							//get classes that are transfered
+							$query = "SELECT *
+												  FROM MV_RoomTransfer
+												 WHERE originalDate = CURDATE()
+												   AND dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
+												   AND term = (SELECT MAX(term)
+																	FROM Assigned_Building
+																   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+												   AND YEAR(originalDate) = YEAR(CURRENT_TIMESTAMP);";
+							$result = $dbc->query($query);
+
+							//now to remove the classes that are transfered
+							foreach($result as $row){
+								foreach ($buildings as $building => $shifts) {
+									foreach ($shifts as $shift => $classes) {
+										foreach($classes as $index => $class){
+												if($class[2] == $row['section']){
+													unset($buildings[$building][$shift][$index]);
+												}
+										}
+									}
+								}
+							}
+
+
+
+							//add the transfered classes for today
+							$query = "SELECT ab.shiftCode as shift, b.buildingName as building, rt.courseCode, rt.venue, rt.section,  rt.dayID, rt.startTime, rt.endTime, CONCAT(DATE_FORMAT(rt.startTime, '%H:%i'), ' - ', DATE_FORMAT(rt.endTime, '%H:%i')) AS time, SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1) as day, CONCAT(f.lastname, ', ', f.firstName) as faculty
+												  FROM MV_RoomTransfer rt JOIN Plantilla p
+																			ON rt.courseCode = p.courseCode
+																		   AND rt.facultyID = p.facultyID
+												                           AND rt.dayID = p.dayID
+												                           AND rt.schoolYear = p.schoolYear
+												                           AND rt.term = p.term
+												                           AND rt.section = p.section
+																		  JOIN Faculty f
+																			ON rt.facultyID = f.facultyID
+																		  JOIN Room r
+																			ON p.roomCode = r.roomCode
+																		  JOIN Ref_Building b
+												                            ON r.buildingCode = b.buildingCode
+																		  JOIN Assigned_Building ab
+																			ON ab.buildingCode = b.buildingCode
+																		  JOIN REF_Shift s
+																			ON s.shiftCode = ab.shiftCode
+												 WHERE rt.originalDate = CURDATE()
+												   AND rt.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
+												   AND ab.accountNo = 2
+												   AND ab.schoolYear = YEAR(CURRENT_TIMESTAMP)
+												   AND ab.term = (SELECT MAX(term)
+																	FROM Assigned_Building
+																   WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
+												   AND rt.startTime BETWEEN s.shiftStart AND s.shiftEnd;";
+							$result = $dbc->query($query);
+
+							foreach ($result as $row) {
+								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+							}
+
+
+							$currentDate = date('F d, Y');
+						?>
 						<table data-toggle="table">
 							<thead>
 								<tr>
@@ -125,142 +229,89 @@ if(isset($_SESSION['adminemail'])){
 								</tr>
 							</thead>
 							<tbody>
-
 								<?php
-										//get the assigned buildings from the database
-								$query = "SELECT b.buildingName, b.buildingCode, ab.shiftCode
-								FROM (SELECT *
-										FROM Assigned_Building
-										WHERE accountNo = $accountNo
-										AND schoolYear = YEAR(CURRENT_TIMESTAMP)
-										AND term = (SELECT MAX(term)
-										FROM Assigned_Building
-										WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))) ab JOIN Ref_Building b
-								ON ab.buildingCode = b.buildingCode
-								Order by 3 asc;";
-										// buildings assigned to
-								$buildingResult = $dbc->query($query);
-								$count = 0;
-								$currentDate = date('F d, Y');
-								$modals = "";
-								foreach($buildingResult as $buildingRow){
-									$buildingCode = $buildingRow['buildingCode'];
-									echo '<tr>';
-									echo "<td>{$buildingRow['shiftCode']}</td>";
-									echo "<td>{$buildingRow['buildingName']}</td>";
-									echo '<td>';
-									echo "<button class=\"btn btn-primary details-button btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
-									Details
-								</button>";
-								$modals .= "<div class=\"modal fade\" id=\"myModal$count\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
-								<div class=\"modal-dialog\">
-									<div class=\"modal-content\">
+									$count = 0;
+									$modals = '';
 
-										<div class=\"modal-header\">
-											<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
-											<div calign=\"center\" lass=\"row\">
-												<h4 align=\"center\" class=\"modal-title\" id=\"myModalLabel\">Classes in <u>{$buildingRow['buildingName']}</u></h4>
-											</div><!-- /.row -->
-											<h6 align=\"center\">for this day: <u>$currentDate</u></h6>
-										</div><!-- /.modal-header-->
+				          foreach ($buildings as $building => $shifts) {
+				            foreach ($shifts as $shift => $classes) {
+				              echo '<tr>';
+				                echo "<td>$shift</td>";
+				                echo "<td>$building</td>";
 
-										<div class=\"modal-body\">";
+				                echo '<td>';
+													echo "<button class=\"btn btn-primary details-button btn-xs\" data-toggle=\"modal\" data-target=\"#myModal$count\">
+																	Details
+																</button>";
 
-											$query = "SELECT b.shiftCode, s.shiftDescription, s.shiftStart, s.shiftEnd
-											FROM (SELECT shiftCode
-											FROM Assigned_Building
-											WHERE accountNo = $accountNo
-											AND schoolYear = YEAR(CURRENT_TIMESTAMP)
-											AND term = (SELECT MAX(term)
-											FROM Assigned_Building
-											WHERE schoolYear = YEAR(CURRENT_TIMESTAMP))
-											AND buildingCode = '$buildingCode') b JOIN Ref_Shift s
-											ON b.shiftCode = s.shiftCode;";
+													$modals .= "<div class=\"modal fade\" id=\"myModal$count\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">
+																	<div class=\"modal-dialog\">
+																		<div class=\"modal-content\">
 
-											$shiftResult = $dbc->query($query);
-											 
-											foreach($shiftResult as $shiftRow){
+																			<div class=\"modal-header\">
+																				<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>
+																				<div calign=\"center\" lass=\"row\">
+																					<h4 align=\"center\" class=\"modal-title\" id=\"myModalLabel\">Classes in <u>$building</u></h4>
+																				</div><!-- /.row -->
+																				<h6 align=\"center\">for this day: <u>$currentDate</u></h6>
+																			</div><!-- /.modal-header-->
 
-																			//get the rooms with classes on the assigned building from the database
-												$query1 = "SELECT roomCode, courseCode, section, trim(term) as term, CONCAT(DATE_FORMAT(startTime, '%H:%i'), ' - ', DATE_FORMAT(endTime, '%H:%i')) AS time,  dayID, CONCAT(firstName, ' ', lastName) AS faculty
-												FROM (SELECT * 
-												FROM Plantilla
-												WHERE roomCode IN (SELECT roomCode
-												FROM Room
-												WHERE buildingCode = '$buildingCode'
-												AND startTime BETWEEN TIME('{$shiftRow['shiftStart']}') AND TIME('{$shiftRow['shiftEnd']}')
-												AND dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1))
-												AND schoolYear = YEAR(CURRENT_TIMESTAMP)
-												AND term  = (SELECT MAX(term)
-												FROM Plantilla
-												WHERE YEAR(CURRENT_TIMESTAMP))) c JOIN Faculty f
-												ON c.facultyID = f.facultyID;";
-												$roomResult = $dbc->query($query1);										
+																			<div class=\"modal-body\">";
 
-												$modals .= "<caption  background=\"gray\"><h3 style='text-align:center;margin-top:0px;margin-bottom:10px'>{$shiftRow['shiftDescription']}</h3></caption>";	
-												$modals .= '<table class="export_table" data-toggle="table">';
-												
-												$modals .= '<thead>';
-												$modals .= '<tr>';
-												$modals .= '<th>Room</th>';
-												$modals .= '<th>Course Code</th>';
-												$modals .= '<th>Section</th>';
-												$modals .= '<th>Time</th>';
-												$modals .= '<th>Day</th>';																						
-												$modals .= '<th>Faculty</th>';
-												$modals .= '<th class="hidden" >Term</th>';
-												$modals .= '<th class="hidden">Code</th>';
-												$modals .= '<th class="hidden">Remarks</th>';
-												$modals .= '</tr>';
-												$modals .= '</thead>';
-
-												$modals .= '<tbody>';
-												foreach($roomResult as $roomRow){
-													$modals .= '<tr>';
-													$modals .= "<td>{$roomRow['roomCode']}</td>";
-													$modals .= "<td>{$roomRow['courseCode']}</td>";
-													$modals .= "<td>{$roomRow['section']}</td>";
-													$modals .= "<td>{$roomRow['time']}</td>";
-													$modals .= "<td>{$roomRow['dayID']}</td>";
-																								
-													$modals .= "<td>{$roomRow['faculty']}</td>";
-													$modals .= "<td class='hidden'>{$roomRow['term']}</td>";
-													$modals .= "<td class='hidden'></td>";
-													$modals .= "<td class='hidden'></td>";
-													$modals .= '</tr>';
-												}
-												$modals .= '</tbody>';
-												$modals .= '</table>';
-											}
-
-											$modals .= "			</div><!-- /.modal-body -->
-
-											<div class=\"modal-footer\">
-												<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
-											</div><!-- /.modal-footer -->
-
-										</div><!--/.modal-content -->
-									</div><!--/.modal-dialog -->
-								</div><!-- /.modal -->
-								";
-								echo '</td>';
-
-								echo '</tr>';
+																			$modals .= "<caption  background=\"gray\"><h3 style='text-align:center;margin-top:0px;margin-bottom:10px'>$shift</h3></caption>";
+																			$modals .= '<table class="export_table" data-toggle="table">';
+																				$modals .=  '<thead>';
+																					$modals .=  '<tr>';
+																						$modals .=  '<th>Course Code</th>';
+																						$modals .=  '<th>Section</th>';
+																						$modals .=  '<th>Time</th>';
+																						$modals .=  '<th>Room/Venue</th>';
+																						$modals .=  '<th>Day</th>';
+																						$modals .=  '<th>Faculty</th>';
+																					$modals .=  '</tr>';
+																				$modals .=  '</thead>';
+																				$modals .= '<tbody>';
+																					foreach($classes as $index => $class){
+																						$modals .= '<tr>';
+																							$modals .= "<td>{$class[1]}</td>";
+																							$modals .= "<td>{$class[2]}</td>";
+																							$modals .= "<td>{$class[3]}</td>";
+																							$modals .= "<td>{$class[0]}</td>";
+																							$modals .= "<td>{$class[4]}</td>";
+																							$modals .= "<td>{$class[5]}</td>";
+																						$modals .= '</tr>';
+																					}
+																				$modals .= '</tbody>';
+																			$modals .= '</table>';
 
 
-								$count++;
-							}	
-							?>
-						</tbody>
-					</table>	
+													$modals .= "			</div><!-- /.modal-body -->
 
-					<?php  echo $modals; ?>					
+																			<div class=\"modal-footer\">
+																				<button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>
+																			</div><!-- /.modal-footer -->
+
+																		</div><!--/.modal-content -->
+																	</div><!--/.modal-dialog -->
+																</div><!-- /.modal -->";
+												echo '</td>';
+				              echo '</tr>';
+
+											$count++;
+				            }
+				          }
+
+				        ?>
+							</tbody>
+					</table>
+
+
 				</div>
 			</div>
 		</div>
-	</div>	
+	</div>
 </div><!--/.col-->
-
+<?php echo $modals; ?>
 	<div class="modal fade" id="myModalCheckedRooms">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -314,8 +365,8 @@ $('table').on('click','button.details-button',function(){
     date = time + ' - '+building + ' - '+ date;
     console.log(date);
 
-    
-	
+
+
 
 	table.update({
 		headings:true,
@@ -334,15 +385,15 @@ $('button').addClass("btn btn-primary btn-xs").css({'color':'white','font-size':
 
 
 
-   
+
 </script>
 <script>
 
 
 	!function ($) {
-		$(document).on("click","ul.nav li.parent > a > span.icon", function(){          
-			$(this).find('em:first').toggleClass("glyphicon-minus");      
-		}); 
+		$(document).on("click","ul.nav li.parent > a > span.icon", function(){
+			$(this).find('em:first').toggleClass("glyphicon-minus");
+		});
 		$(".sidebar span.icon").find('em:first').addClass("glyphicon-plus");
 	}(window.jQuery);
 

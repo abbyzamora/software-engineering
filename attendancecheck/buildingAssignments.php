@@ -227,7 +227,7 @@ if(isset($_SESSION['adminemail'])){
 																			ON ab.buildingCode = b.buildingCode
 																		  JOIN REF_Shift s
 																			ON s.shiftCode = ab.shiftCode
-												 WHERE rt.originalDate = CURDATE()
+												 WHERE rt.transferDate = CURDATE()
 												   AND rt.dayID = SUBSTRING(DATE_FORMAT(CURRENT_TIMESTAMP,'%a') FROM 1 FOR 1)
 												   AND ab.accountNo = $accountNo
 												   AND ab.schoolYear = YEAR(CURRENT_TIMESTAMP)

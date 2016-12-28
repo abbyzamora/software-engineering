@@ -240,6 +240,17 @@ if(isset($_SESSION['adminemail'])){
 
 							foreach ($result as $row) {
 								//$buildings[$row['buildingName']][$row['shift']][] = ['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['roomCode'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
+
+
+								foreach ($buildings as $building => $shifts) {
+									foreach ($shifts as $shift => $classes) {
+										foreach($classes as $index => $class){
+												if($class[2] == $row['section'] AND $class[1] == $row['courseCode'] AND $class['startTime'] == $row['startTime'] AND $class['endTime'] == $row['endTime']){
+													unset($buildings[$building][$shift][$index]);
+												}
+										}
+									}
+								}
 								$buildings[$row['building']][$row['shift']][] =['startTime' => $row['startTime'], 'endTime' => $row['endTime'], $row['venue'], $row['courseCode'], $row['section'], $row['time'], $row['dayID'], $row['faculty']];
 							}
 
